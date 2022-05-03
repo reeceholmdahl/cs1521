@@ -1,0 +1,791 @@
+Script started on 2021-04-06 16:03:59-0500
+#### Part1 - oneTeller version ####
+2% pwd
+/home/csugrads/holmd353/projects/project6/oneTeller
+3% ls l[K-l
+total 60
+-rw------- 1 holmd353 student 1279 Apr  6 15:59 EventBuilder.cpp
+-rw------- 1 holmd353 student 1430 Apr  6 15:59 EventBuilder.h
+-rw------- 1 holmd353 student   16 Apr  6 15:54 input0.dat
+-rw------- 1 holmd353 student    0 Apr  6 15:54 input1.dat
+-rw------- 1 holmd353 student   17 Apr  6 15:54 input2.dat
+-rw------- 1 holmd353 student   23 Apr  6 15:54 input3.dat
+-rw------- 1 holmd353 student   47 Apr  6 15:54 input4.dat
+-rw------- 1 holmd353 student  870 Apr  6 15:54 input5.dat
+-rw------- 1 holmd353 student 1748 Apr  6 15:54 input6.dat
+-rw------- 1 holmd353 student 2940 Apr  6 15:54 input7.dat
+-rw------- 1 holmd353 student  189 Apr  6 16:01 project6.cpp
+-rw------- 1 holmd353 student 3922 Apr  6 15:54 README
+-rw------- 1 holmd353 student 2231 Apr  6 15:59 Simulation.cpp
+-rw------- 1 holmd353 student  547 Apr  6 16:00 Simulation.h
+-rw------- 1 holmd353 student 1901 Apr  6 16:00 Statistics.cpp
+-rw------- 1 holmd353 student  992 Apr  6 16:03 Statistics.h
+-rw------- 1 holmd353 student    0 Apr  6 16:03 typescript.txt
+4% cat -n ../CMA[KakeLists.txt 
+     1	# My ID: 5727889
+     2	# Master CMakeLists.txt file: covers both oneTeller and threeTeller binaries.
+     3	cmake_minimum_required(VERSION 3.10)
+     4	
+     5	project("Project6 Bank Simulation"
+     6	  VERSION 0.0.0
+     7	  DESCRIPTION "Project6, two execs: one teller, and three teller"
+     8	  LANGUAGES CXX)
+     9	
+    10	add_compile_options(-Wall -Wextra -Wpedantic)
+    11	
+    12	set(CXX_STANDARD 17)
+    13	set(CXX_STANDARD_REQUIRED ON)
+    14	set(CXX_EXTENSIONS OFF)
+    15	
+    16	add_executable(oneTeller
+    17	  oneTeller/project6.cpp
+    18	  Event.cpp
+    19	  PrecondViolatedExcep.cpp
+    20	  oneTeller/EventBuilder.cpp
+    21	  oneTeller/Statistics.cpp
+    22	  oneTeller/Simulation.cpp)
+    23	
+    24	add_executable(threeTeller
+    25	  threeTeller/project6.cpp
+    26	  Event.cpp
+    27	  PrecondViolatedExcep.cpp
+    28	  threeTeller/EventBuilder.cpp
+    29	  threeTeller/Statistics.cpp
+    30	  threeTeller/Simulation.cpp)
+5% cat -n r[Kproject6.cpp 
+     1	// My ID: 5727889
+     2	// This file is part of the oneTeller version
+     3	#include <cstdlib>
+     4	
+     5	#include "Simulation.h"
+     6	
+     7	int main() {
+     8	
+     9	   Simulation sim;
+    10	
+    11	   sim.simulate();
+    12	
+    13	   return EXIT_SUCCESS;
+    14	}
+6% cat -n [K[K-n Stati
+Statistics.cpp  Statistics.h    
+6% cat -n Statistics.h
+     1	// My ID: 5727889
+     2	// This file is part of the oneTeller version
+     3	#ifndef STATISTICS_
+     4	#define STATISTICS_
+     5	
+     6	// #define TESTING
+     7	
+     8	#include "../Event.h"
+     9	#include "../LinkedQueue.h"
+    10	
+    11	class Statistics {
+    12	private:
+    13	   int count = 0;
+    14	
+    15	   Time waitTime = 0;
+    16	
+    17	   /** Arrival events get stored until we encounter the next departure
+    18	    *  event.  This arrival along with the departure are then used to
+    19	    *  generate the wait time of this arrival. */
+    20	   LinkedQueue<Event> arrivalEvents;
+    21	
+    22	public:
+    23	   Statistics() = default;
+    24	
+    25	   virtual ~Statistics() = default;
+    26	
+    27	   /** Adds 'event' to the statistics collected so far.
+    28	    *
+    29	    * If 'event' is an arrival event, increment 'count' and store it
+    30	    * for use with the next departure event.
+    31	    *
+    32	    * If 'event' is a departure event, calculate the wait time for
+    33	    * this customer and add it onto 'waitTime'. */
+    34	   void addEvent(const Event& event);
+    35	
+    36	   /** Output a report of the statistics for this simulation. */
+    37	   void reportStats() const;
+    38	};
+    39	
+    40	#endif
+7% cat -n Statistics.h[Kcpp
+     1	// My ID: 5727889
+     2	// This file is part of the oneTeller version
+     3	#include <iostream>
+     4	
+     5	#include "Statistics.h"
+     6	
+     7	void Statistics::addEvent(const Event& event) {
+     8	
+     9	   if (event.getType() == EventType::ARRIVAL) {
+    10	#ifdef TESTING
+    11	      std::cout << "Processing arrival event "
+    12	                << event.getNumber()
+    13	                << " at time: "
+    14	                << event.getTime()
+    15	                << std::endl;
+    16	#endif
+    17	
+    18	#ifndef TESTING
+    19	      std::cout << ".";
+    20	
+    21	      if (event.getNumber() % 72 == 0)
+    22	         std::cout << std::endl;
+    23	#endif
+    24	      arrivalEvents.enqueue(event);
+    25	      ++count;
+    26	   }
+    27	   else { // event is a departure event
+    28	#ifdef TESTING
+    29	      std::cout << "Processing departure event "
+    30	                << event.getNumber()
+    31	                << " at time: "
+    32	                << event.getTime();
+    33	#endif
+    34	      if (!arrivalEvents.isEmpty() ) {
+    35	         Event arrivalEvent;
+    36	
+    37	         arrivalEvent = arrivalEvents.peekFront();
+    38	         arrivalEvents.dequeue();
+    39	         waitTime += event.getTime() -
+    40	            (arrivalEvent.getTime() + arrivalEvent.getDuration() );
+    41	#ifdef TESTING
+    42	         std::cout << " event "
+    43	                   << arrivalEvent.getNumber()
+    44	                   << " waited: "
+    45	                   << event.getTime() -
+    46	            (arrivalEvent.getTime() + arrivalEvent.getDuration() );
+    47	#endif
+    48	      }
+    49	#ifdef TESTING
+    50	      else {
+    51	         std::cout << " no events waiting.";
+    52	      }
+    53	      std::cout << std::endl;
+    54	#endif
+    55	   }
+    56	}
+    57	
+    58	void Statistics::reportStats() const {
+    59	
+    60	  std::cout << "Final Statistics:"
+    61		    << std::endl;
+    62	
+    63	  std::cout << "\tTotal number of people processed: "
+    64		    << count
+    65		    << std::endl;
+    66	
+    67	  std::cout << "\tTotal wait time: "
+    68		    << waitTime
+    69		<< std::endl;
+    70	
+    71	   std::cout << "\tAverage amount of time spent waiting: ";
+    72	   if (count != 0) {
+    73	      std::cout << (double)waitTime / (double)count;
+    74	   }
+    75	   else {
+    76	      std::cout << 0.0;
+    77	   }
+    78	   std::cout << std::endl;
+    79	}
+8% cat -n Statistics.cpp[K[K[K[K[K[K[K[K[K[K[K[K[K[KSimul
+Simulation.cpp  Simulation.h    
+8% cat -n Simulation.h
+     1	// My ID: 5727889
+     2	// This file is part of the oneTeller version
+     3	#ifndef SIMULATION_
+     4	#define SIMULATION_
+     5	
+     6	#include "../Event.h"
+     7	#include "EventBuilder.h"
+     8	#include "../LinkedQueue.h"
+     9	#include "../PriorityQueue.h"
+    10	#include "Statistics.h"
+    11	
+    12	class Simulation {
+    13	private:
+    14	   Event currentEvent;
+    15	   EventBuilder eventBuilder;
+    16	   LinkedQueue<Event> line;
+    17	   PriorityQueue<Event> events;
+    18	   Statistics stats;
+    19	
+    20	   void processArrival();
+    21	   void processDeparture();
+    22	
+    23	public:
+    24	   Simulation();
+    25	   virtual ~Simulation() = default;
+    26	
+    27	   void simulate();
+    28	};
+    29	
+    30	#endif
+9% cat -n Simulation.h[Kcpp
+     1	// My ID: 5727889
+     2	// This file is part of the oneTeller version
+     3	#include <iostream>
+     4	
+     5	#include "Simulation.h"
+     6	#include "../Time.h"
+     7	#include "../EventType.h"
+     8	
+     9	Simulation::Simulation() {
+    10	  std::cout << "Simulation of 1 Queue Begins" << std::endl;
+    11	}
+    12	
+    13	void Simulation::processArrival() {
+    14	
+    15	  // Line empty?
+    16	  bool lineIsEmpty(line.isEmpty());
+    17	  
+    18	  // Add event to the line
+    19	  line.enqueue(currentEvent);
+    20	
+    21	  // Dequeue from the event list
+    22	  events.dequeue();
+    23	
+    24	  // Add a departure event to the event list if the line was empty
+    25	  if (lineIsEmpty) {    
+    26	    Event departure(eventBuilder.createDepartureEvent(currentEvent.getTime(),
+    27							      currentEvent.getDuration(),
+    28							      currentEvent.getNumber()
+    29							      ));
+    30	    
+    31	    events.enqueue(departure);
+    32	  }
+    33	
+    34	  // Add next arrival event, -1 number arbitrary for now
+    35	  Event nextArrival = eventBuilder.createArrivalEvent(currentEvent.getNumber() + 1);
+    36	
+    37	  // If the event is valid, meaning input stream hasn't reached end of file then add it to events
+    38	  if (nextArrival.getType() != EventType::NONE) {
+    39	    events.enqueue(nextArrival);
+    40	  }
+    41	}
+    42	
+    43	void Simulation::processDeparture() {
+    44	
+    45	  // Remove customer from front of line
+    46	  line.dequeue();
+    47	
+    48	  // Remove this departure event from front of events queue
+    49	  events.dequeue();
+    50	
+    51	  // If the line isn't empty, enqueue a departure event for the customer at front of line.
+    52	  if (!line.isEmpty()) {
+    53	    Event front(line.peekFront());
+    54	    
+    55	    events.enqueue(eventBuilder.createDepartureEvent(currentEvent.getTime(),
+    56							     front.getDuration(),
+    57							     front.getNumber()
+    58							     ));
+    59	  }
+    60	}
+    61	
+    62	void Simulation::simulate() {
+    63	
+    64	  Event firstEvent = eventBuilder.createArrivalEvent(1);
+    65	  
+    66	  if (firstEvent.getType() != EventType::NONE) {
+    67	    events.enqueue(firstEvent);
+    68	  }
+    69	      
+    70	  while(!events.isEmpty()) {
+    71	    
+    72	    // Next event
+    73	    currentEvent = events.peekFront();
+    74	
+    75	    if (currentEvent.getType() == EventType::ARRIVAL) {
+    76	
+    77	      processArrival();
+    78	    } else { // The event is a departure event
+    79	
+    80	      processDeparture();
+    81	    }
+    82	
+    83	    // Add to statistics
+    84	    stats.addEvent(currentEvent);
+    85	  }
+    86	
+    87	#ifndef TESTING
+    88	  std::cout << std::endl;
+    89	#endif
+    90	
+    91	  std::cout << "Simulation Ends\n" << std::endl;
+    92	
+    93	  // Report statistics
+    94	  stats.reportStats();
+    95	}
+10% cat -n Simulation.cpp[K[K[K[K[K[K[K[K[K[K[K[K[K[KEvent
+EventBuilder.cpp  EventBuilder.h    
+10% cat -n EventBuilder.h
+     1	// My ID: 5727889
+     2	// This file is part of the oneTeller version
+     3	#ifndef EVENT_BUILDER_
+     4	#define EVENT_BUILDER_
+     5	
+     6	#include <fstream>
+     7	
+     8	#include "../Event.h"
+     9	
+    10	class EventBuilder {
+    11	private:
+    12	   std::ifstream inputFile;
+    13	
+    14	public:
+    15	   /** Three things must happen to create an EventBuilder:
+    16	    *  1) Prompt the user for the name of an input file
+    17	    *  2) Attempt to open this file on the 'inputFile' data member
+    18	    *  3) If the file doesn't open, repeat steps 1 and 2 */
+    19	   EventBuilder();
+    20	
+    21	   /** Create and return an event with members:
+    22	    *  type == EventType::ARRIVAL
+    23	    *  number == input argument 'number'
+    24	    *  time == time read from 'inputFile'
+    25	    *  duration == transaction length read from 'inputFile'
+    26	    *
+    27	    *  If 'inputFile' has been completely read (EOF has been reached),
+    28	    *  then set the return event.type field to EventType::NONE.  This
+    29	    *  can then be used to tell when the external file is either empty
+    30	    *  or EOF has been reached. */
+    31	   Event createArrivalEvent(int number);
+    32	
+    33	   /** Create and return an event with members:
+    34	    *  type == EventType::DEPATURE
+    35	    *  number == input argument 'number'
+    36	    *  time == 'currentEventTime' + 'transactionLength'
+    37	    *
+    38	    *  The duration field is unused for departure type events. */
+    39	   Event createDepartureEvent(const Time& currentEventTime,
+    40	                              const Time& transactionLength,
+    41	                              int number);
+    42	};
+    43	
+    44	#endif
+11% cat -n EventBuilder.h[Kcpp
+     1	// My ID: 5727889
+     2	// This file is part of the oneTeller version
+     3	#include <iostream>
+     4	
+     5	#include "EventBuilder.h"
+     6	#include "../Time.h"
+     7	#include "../EventType.h"
+     8	
+     9	EventBuilder::EventBuilder() {
+    10	  while(true) {
+    11	    std::cout << "Input file name: ";
+    12	
+    13	    std::string fileName;
+    14	    std::cin >> fileName;
+    15	
+    16	    inputFile.open(fileName);
+    17	
+    18	    // If cannot open, continue loop at start and try again
+    19	    if (!inputFile) {
+    20	      std::cout << "Could not open file '" << fileName << "'. Please try again." << std::endl;
+    21	      continue;
+    22	    }
+    23	
+    24	    // If properly opened, add a linebreak and exit loop; construction is complete
+    25	    std::cout << std::endl;
+    26	    break;
+    27	  }
+    28	}
+    29	
+    30	Event EventBuilder::createArrivalEvent(int number) {
+    31	  Event event;
+    32	  Time time;
+    33	  Time duration;
+    34	  
+    35	  inputFile >> time;
+    36	  inputFile >> duration;
+    37	
+    38	  // If the input file stream is good, attribute inputs to the event
+    39	  if (inputFile.good()) {
+    40	    event.setTime(time);
+    41	    event.setDuration(duration);
+    42	    event.setNumber(number);
+    43	    event.setType(EventType::ARRIVAL);
+    44	  }
+    45	
+    46	  return event;
+    47	}
+    48	
+    49	Event EventBuilder::createDepartureEvent(const Time& currentEventTime, const Time& transactionLength, int number) {
+    50	  Event departure(EventType::DEPARTURE, currentEventTime + transactionLength, 0, number);
+    51	  return departure;
+    52	}
+12% k[Kls
+EventBuilder.cpp  input0.dat  input2.dat  input4.dat  input6.dat  project6.cpp	Simulation.cpp	Statistics.cpp	typescript.txt
+EventBuilder.h	  input1.dat  input3.dat  input5.dat  input7.dat  README	Simulation.h	Statistics.h
+13% 
+13% cat - [K-n ../Even
+Event.cpp    Event.h      EventType.h  
+13% cat -n ../Event.h
+     1	// My ID: 5727889
+     2	// Master file, included in both oneTeller and threeTeller varieties
+     3	#ifndef EVENT_
+     4	#define EVENT_
+     5	
+     6	#include "EventType.h"
+     7	#include "Time.h"
+     8	
+     9	class Event {
+    10	private:
+    11	
+    12	  EventType type;
+    13	  Time time;
+    14	  Time duration;
+    15	  int number;
+    16	  int line;
+    17	  
+    18	public:
+    19	
+    20	  /** Ctor with preset arguments */
+    21	  Event(EventType type = EventType::NONE, Time time = 0, Time duration = 0, int number = 0, int line = 1);
+    22	
+    23	  /** Virtual (default) dtor */
+    24	  virtual ~Event() = default;
+    25	
+    26	  /** Comparison operator overloads */
+    27	  bool operator<(const Event& rhs) const {
+    28	    return time < rhs.time;
+    29	  }
+    30	
+    31	  bool operator>(const Event& rhs) const {
+    32	    return time > rhs.time;
+    33	  }
+    34	
+    35	  bool operator==(const Event& rhs) const {
+    36	    return time == rhs.time;
+    37	  }
+    38	
+    39	  /** Comparison operator overloads defined in terms of the previous three overloads */
+    40	  bool operator<=(const Event& rhs) const {
+    41	    return *this < rhs || *this == rhs;
+    42	  }
+    43	
+    44	  bool operator>=(const Event& rhs) const {
+    45	    return *this > rhs || *this == rhs;
+    46	  }
+    47	
+    48	  bool operator!=(const Event& rhs) const {
+    49	    return !(*this == rhs);
+    50	  }
+    51	
+    52	  /** Accessor and mutator for 'type' */
+    53	  virtual EventType getType() const;
+    54	
+    55	  virtual void setType(EventType newType);
+    56	
+    57	  /** Accessor and mutator for 'time' */
+    58	  virtual Time getTime() const;
+    59	
+    60	  virtual void setTime(Time newTime);
+    61	
+    62	  /** Accessor and mutator for 'duration' */
+    63	  virtual Time getDuration() const;
+    64	
+    65	  virtual void setDuration(Time newDuration);
+    66	
+    67	  /** Accessor and mutator for 'number' */
+    68	  virtual int getNumber() const;
+    69	
+    70	  virtual void setNumber(int newNumber);
+    71	
+    72	  /** Accessor and mutator for 'line' */
+    73	  virtual int getLine() const;
+    74	
+    75	  virtual void setLine(int newLine);
+    76	};
+    77	
+    78	#endif // EVENT_
+14% cat -n ../Event.h[Kcpp
+     1	// My ID: 5727889
+     2	// Master file, included in both oneTeller and threeTeller varieties
+     3	#include "Event.h"
+     4	
+     5	Event::Event(EventType type, Time time, Time duration, int number, int line) {
+     6	  this->type = type;
+     7	  this->time = time;
+     8	  this->duration = duration;
+     9	  this->number = number;
+    10	  this->line = line;
+    11	}
+    12	
+    13	EventType Event::getType() const {
+    14	  return type;
+    15	}
+    16	
+    17	void Event::setType(EventType newType) {
+    18	  type = newType;
+    19	}
+    20	
+    21	Time Event::getTime() const {
+    22	  return time;
+    23	}
+    24	
+    25	void Event::setTime(Time newTime) {
+    26	  time = newTime;
+    27	}
+    28	
+    29	Time Event::getDuration() const {
+    30	  return duration;
+    31	}
+    32	
+    33	void Event::setDuration(Time newDuration) {
+    34	  duration = newDuration;
+    35	}
+    36	
+    37	int Event::getNumber() const {
+    38	  return number;
+    39	}
+    40	
+    41	void Event::setNumber(int newNumber) {
+    42	  number = newNumber;
+    43	}
+    44	
+    45	int Event::getLine() const {
+    46	  return line;
+    47	}
+    48	
+    49	void Event::setLine(int newLine) {
+    50	  line = newLine;
+    51	}
+15% cat -n ../Event.cpp[K[K[K[KType.h
+     1	// My ID: 5727889
+     2	// Master file, included in both oneTeller and threeTeller varieties
+     3	#ifndef EVENT_TYPE_
+     4	#define EVENT_TYPE_
+     5	
+     6	enum class EventType {
+     7			      NONE,
+     8			      ARRIVAL,
+     9			      DEPARTURE
+    10	};
+    11	
+    12	#endif // EVENT_TYPE
+16% cat -n ../EventType.h[K[K[K[K[K[K[K[K[K[K[KTime.h
+     1	// My ID: 5727889
+     2	// Master file, included in both oneTeller and threeTeller varieties
+     3	#ifndef TIME_ALIAS_
+     4	#define TIME_ALIAS_
+     5	
+     6	using Time = unsigned int;
+     7	
+     8	#endif // TIME_ALIAS_
+17% git --no-pager log --no-color
+commit 8175f18bafa32d7a763eecb88b4c6aecea365478 (HEAD -> master)
+Author: Reece Holmdahl <rholmdahl@gmail.com>
+Date:   Tue Apr 6 15:56:20 2021 -0500
+
+    Got rid of debug messages. Finished formatting. Changed one thing in LinkedSortedList: in getNodeBefore, replace < with <= because that is the opposite of >. Tests now respond identically to the ones in readmes.
+
+commit c05ffc1dc1e39c6876aba9533e15b1182fbe2f03
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 15:49:31 2021 -0500
+
+    Got ordering working correctly as dictated by examples on project page. Working on formatting then will submit
+
+commit fae8591d53d2d22274ee191309274eda3b72497c
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 15:17:05 2021 -0500
+
+    Almost everything in three teller version working correctly. Working on trying to get the order correct with the examples, checking to see if my length addition is working correctly.
+
+commit 1eb7e3ef8ee93e3a34300423f006bf39bf7b867f
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 14:39:19 2021 -0500
+
+    Working on line number abstraction by using aliases and a private utility method to convert an int (1, 2, or 3) to a reference to the respective linked queue of events.
+
+commit 3c870f6130d82468e71a84a3deeb5b9fccee9955
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 14:17:47 2021 -0500
+
+    Copied oneTeller version of EventBuilder and Simulation to threeTeller to make adjustments. Also implemented getLength and the proper back end modifications to make it work for the line length acquisition.
+
+commit a1935cbaf5a0088ba1ab1490d340371ce6b328fd
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 14:09:55 2021 -0500
+
+    Made Event compatible with three teller version
+
+commit 759ccb946243e91fd1cd51bd79cb5260604a5d4f
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 14:05:01 2021 -0500
+
+    Happy with formatting of output for oneTeller, moving to threeTeller
+
+commit 56c9714b43c18a637e4268df96a689170560d025
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 14:02:18 2021 -0500
+
+    Added linked queue for the simulation class. Got preliminary implementation of oneTeller version working correctly, briefly focusing on formatting before moving to threeTeller version
+
+commit c3d4311d2ac787ee9652d1a849333431370f2602
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 11:21:38 2021 -0500
+
+    Added operator overloads to event.h
+
+commit 01f9b0036a1f0c5db5ce765551374392278c8178
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 10:24:06 2021 -0500
+
+    gitignore
+
+commit f583a6259db290227e717dbd91caab901db096a0
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 10:23:35 2021 -0500
+
+    WIP version of CMakeLists.txt, and 'finished' versions of Event, EventType, and Time
+
+commit acc2036f27d19aac4e83acee46394f1e52dc3959
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 09:44:48 2021 -0500
+
+    Added moooore base files for ADTs used behind the scenes in this project. Using smart pointer version of Node as linked sorted list does not call explicit delete.
+
+commit 1c19d086395378644fa7adf24c6800df57621143
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 09:37:20 2021 -0500
+
+    Made more base files. Opting for the unchanged files per version (Event, EventType, and Time) to go in the parent directory
+
+commit 5b03c0d94155e5f100b518a1b0a21fce3010a64c
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 09:35:11 2021 -0500
+
+    Added base files from ~sholtz/.../project6
+18% cd ../build/
+19% make c[K
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/csugrads/holmd353/projects/project6/build
+[35m[1mScanning dependencies of target oneTeller[0m
+[  7%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/oneTeller/project6.cpp.o[0m
+[ 14%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/Event.cpp.o[0m
+[ 21%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/PrecondViolatedExcep.cpp.o[0m
+[ 28%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/oneTeller/EventBuilder.cpp.o[0m
+[ 35%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/oneTeller/Statistics.cpp.o[0m
+[ 42%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/oneTeller/Simulation.cpp.o[0m
+[ 50%] [32m[1mLinking CXX executable oneTeller[0m
+[ 50%] Built target oneTeller
+[35m[1mScanning dependencies of target threeTeller[0m
+[ 57%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/threeTeller/project6.cpp.o[0m
+[ 64%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/Event.cpp.o[0m
+[ 71%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/PrecondViolatedExcep.cpp.o[0m
+[ 78%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/threeTeller/EventBuilder.cpp.o[0m
+[ 85%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/threeTeller/Statistics.cpp.o[0m
+[ 92%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/threeTeller/Simulation.cpp.o[0m
+[100%] [32m[1mLinking CXX executable threeTeller[0m
+[100%] Built target threeTeller
+20% one[K[K[K./oneTeller 
+Input file name: ../oneTeller/input0.dat
+
+Simulation of 1 Queue Begins
+....
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 4
+	Total wait time: 39
+	Average amount of time spent waiting: 9.75
+21% ./oneTeller
+Input file name: ../oneTeller/input0.dat     1.dat
+
+Simulation of 1 Queue Begins
+
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 0
+	Total wait time: 0
+	Average amount of time spent waiting: 0
+22% ./oneTeller
+Input file name: ../oneTeller/input0.dat     2.dat
+
+Simulation of 1 Queue Begins
+....
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 4
+	Total wait time: 0
+	Average amount of time spent waiting: 0
+23% ../oneTeller/input0.dat[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K./oneTeller
+Input file name: ../oneTeller/input0.dat     3.dat
+
+Simulation of 1 Queue Begins
+.....
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 5
+	Total wait time: 13
+	Average amount of time spent waiting: 2.6
+24% ./oneTeller
+Input file name: ../oneTeller/input0.dat     4.dat
+
+Simulation of 1 Queue Begins
+..........
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 10
+	Total wait time: 56
+	Average amount of time spent waiting: 5.6
+25% ./oneTeller
+Input file name: ../oneTeller/input0.dat     5.dat
+
+Simulation of 1 Queue Begins
+........................................................................
+........................................................................
+......
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 150
+	Total wait time: 1780
+	Average amount of time spent waiting: 11.8667
+26% ./oneTeller
+Input file name: ../oneTeller/input0.dat     6.dat
+
+Simulation of 1 Queue Begins
+........................................................................
+........................................................................
+........................................................................
+........................................................................
+............
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 300
+	Total wait time: 47994
+	Average amount of time spent waiting: 159.98
+27% ./oneTeller
+Input file name: ../oneTeller/input0.dat     7.dat
+
+Simulation of 1 Queue Begins
+........................................................................
+........................................................................
+........................................................................
+........................................................................
+........................................................................
+........................................................................
+....................................................................
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 500
+	Total wait time: 83571
+	Average amount of time spent waiting: 167.142
+28% exit
+exit
+
+Script done on 2021-04-06 16:06:50-0500

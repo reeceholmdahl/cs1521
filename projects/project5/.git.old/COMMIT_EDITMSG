@@ -1,0 +1,1 @@
+Added try catch blocks to gracefully exit when there is a dynamic memory lack.

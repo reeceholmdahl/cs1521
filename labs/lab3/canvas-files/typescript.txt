@@ -1,0 +1,769 @@
+Script started on 2021-02-16 11:21:27-0600
+1% pwd
+/home/csugrads/holmd353/labs/lab3
+2% ls -l
+total 28
+-rwx------ 1 holmd353 student 2759 Feb 16 11:20 ArraySet.cpp
+-rwx------ 1 holmd353 student 2158 Feb 16 11:20 ArraySet.h
+drwxr-xr-x 3 holmd353 student 4096 Feb 16 11:21 build
+-rw------- 1 holmd353 student  320 Feb 16 11:20 CMakeLists.txt
+-rw------- 1 holmd353 student 4397 Feb 16 11:20 lab3.cpp
+-rwx------ 1 holmd353 student 2685 Feb 16 11:20 SetInterface.h
+-rw------- 1 holmd353 student    0 Feb 16 11:21 typescript.txt
+3% cat -n CMakeLists.txt
+     1	# My ID#: 5727889
+     2	cmake_minimum_required(VERSION 3.10)
+     3	
+     4	project("Lab 3 Sets"
+     5	  VERSION 0.0.0
+     6	  DESCRIPTION "Array-based implementation of ADT set"
+     7	  LANGUAGES CXX)
+     8	
+     9	add_compile_options(-Wall -Wextra -Wpedantic)
+    10	
+    11	set(CXX_STANDARD 14)
+    12	set(CXX_STANDARD_REQUIRED ON)
+    13	set(CXX_EXTENSIONS OFF)
+    14	
+    15	add_executable(lab3
+    16	  lab3.cpp)
+4% cat -n lab3.cpp 
+     1	// My ID#: 5727889
+     2	#include <iostream>
+     3	#include <vector>
+     4	
+     5	#include "ArraySet.h"
+     6	
+     7	using std::cout;
+     8	using std::endl;
+     9	using std::string;
+    10	using std::vector;
+    11	
+    12	template <typename T>
+    13	void printSet(const SetInterface<T>& set) {
+    14	
+    15	  cout << "Printing set." << endl;
+    16	  
+    17	  const vector<T> v = set.toVector();
+    18	
+    19	  int size(v.size());
+    20	
+    21	  if (!size) {
+    22	    
+    23	    cout << "The set is empty." << endl;
+    24	  } else {
+    25	
+    26	    for (int index(0); index < size; ++index) {
+    27	      cout << "Element: " << v[index] << endl;
+    28	    }
+    29	  }
+    30	
+    31	  cout << endl;
+    32	}
+    33	
+    34	template <typename T>
+    35	void testAdd(SetInterface<T>& set, const T& addition, bool expectedResult) {
+    36	  cout << "Attempting to add " << addition
+    37	       << " to the set (should be " << expectedResult
+    38	       << "): " << set.add(addition) << endl;
+    39	}
+    40	
+    41	int main() {
+    42	
+    43	  ArraySet<string> set1;
+    44	  ArraySet<string> set2;
+    45	  ArraySet<string> diff;
+    46	
+    47	  cout << "1: ArraySet doesn't allow duplicates:" << endl;
+    48	
+    49	  // Show results set1, set2, and their difference
+    50	  cout << "Set1:" << endl;
+    51	  printSet(set1);
+    52	
+    53	  testAdd(set1, string("hey!"), true);
+    54	  testAdd(set1, string("hello!"), true);
+    55	  testAdd(set1, string("hey!"), false);
+    56	
+    57	  cout << "\nSet1:" << endl;
+    58	  printSet(set1);
+    59	  set1.clear();
+    60	
+    61	  cout << "2: Both LHS and RHS are empty:" << endl;
+    62	  
+    63	  // Show results set1, set2, and their difference
+    64	  cout << "Set1:" << endl;
+    65	  printSet(set1);
+    66	
+    67	  cout << "Set2:" << endl;
+    68	  printSet(set2);
+    69	  
+    70	  diff = set1.difference(set2);
+    71	
+    72	  cout << "Difference Set1 to Set2:" << endl;
+    73	  printSet(diff);
+    74	
+    75	  cout << "3: LHS is empty, RHS has items:" << endl;
+    76	
+    77	  // Add some stuff to RHS
+    78	  set2.add("hello");
+    79	  set2.add("goodbye");
+    80	  set2.add("bonjour");
+    81	
+    82	  // Show results set1, set2, and their difference
+    83	  cout << "Set1:" << endl;
+    84	  printSet(set1);
+    85	
+    86	  cout << "Set2:" << endl;
+    87	  printSet(set2);
+    88	  
+    89	  diff = set1.difference(set2);
+    90	
+    91	  cout << "Difference Set1 to Set2:" << endl;
+    92	  printSet(diff);
+    93	
+    94	  cout << "4: RHS is empty, LHS has items:" << endl;
+    95	  
+    96	  // Clear RHS and add some stuff to LHS
+    97	  set2.clear();
+    98	  set1.add("twist");
+    99	  set1.add("fred");
+   100	  set1.add("johnny5");
+   101	
+   102	  // Show results set1, set2, and their difference
+   103	  cout << "Set1:" << endl;
+   104	  printSet(set1);
+   105	
+   106	  cout << "Set2:" << endl;
+   107	  printSet(set2);
+   108	  
+   109	  diff = set1.difference(set2);
+   110	
+   111	  cout << "Difference Set1 to Set2:" << endl;
+   112	  printSet(diff);
+   113	
+   114	  cout << "5: LHS and RHS have items without intersection:" << endl;
+   115	
+   116	  // LHS already has stuff, add some stuff not in LHS to RHS
+   117	  set2.add("hello");
+   118	  set2.add("goodbye");
+   119	  set2.add("bonjour");
+   120	
+   121	  // Show results set1, set2, and their difference
+   122	  cout << "Set1:" << endl;
+   123	  printSet(set1);
+   124	
+   125	  cout << "Set2:" << endl;
+   126	  printSet(set2);
+   127	  
+   128	  diff = set1.difference(set2);
+   129	
+   130	  cout << "Difference Set1 to Set2:" << endl;
+   131	  printSet(diff);
+   132	
+   133	  cout << "6: LHS and RHS have items with partial intersection:" << endl;
+   134	
+   135	  // Add something LHS has to RHS
+   136	  set2.add("twist");
+   137	
+   138	  // Show results set1, set2, and their difference
+   139	  cout << "Set1:" << endl;
+   140	  printSet(set1);
+   141	
+   142	  cout << "Set2:" << endl;
+   143	  printSet(set2);
+   144	  
+   145	  diff = set1.difference(set2);
+   146	
+   147	  cout << "Difference Set1 to Set2:" << endl;
+   148	  printSet(diff);
+   149	
+   150	  cout << "7: LHS and RHS have complete intersection:" << endl;
+   151	
+   152	  // Make LHS and RHS identical
+   153	  set1.clear();
+   154	  set2.clear();
+   155	  set1.add("testing");
+   156	  set2.add("testing");
+   157	  set1.add("identical");
+   158	  set2.add("identical");
+   159	  set1.add("sets");
+   160	  set2.add("sets");
+   161	
+   162	  // Show results set1, set2, and their difference
+   163	  cout << "Set1:" << endl;
+   164	  printSet(set1);
+   165	
+   166	  cout << "Set2:" << endl;
+   167	  printSet(set2);
+   168	  
+   169	  diff = set1.difference(set2);
+   170	
+   171	  cout << "Difference Set1 to Set2:" << endl;
+   172	  printSet(diff);
+   173	
+   174	  cout << "(additional) 8: LHS has every element in RHS plus more:" << endl;
+   175	
+   176	  // Add some extra stuff to LHS
+   177	  set1.add("extra");
+   178	  set1.add("stuff");
+   179	
+   180	  // Show results set1, set2, and their difference
+   181	  cout << "Set1:" << endl;
+   182	  printSet(set1);
+   183	
+   184	  cout << "Set2:" << endl;
+   185	  printSet(set2);
+   186	  
+   187	  diff = set1.difference(set2);
+   188	
+   189	  cout << "Difference Set1 to Set2:" << endl;
+   190	  printSet(diff);
+   191	
+   192	  cout << "(additional) 9: RHS has every element in LHS plus more:" << endl;
+   193	
+   194	  // Show results set1, set2, and their difference
+   195	  cout << "Set1:" << endl;
+   196	  printSet(set1);
+   197	
+   198	  cout << "Set2:" << endl;
+   199	  printSet(set2);
+   200	  
+   201	  diff = set2.difference(set1);
+   202	
+   203	  cout << "Difference Set2 to Set1 (switched operands):" << endl;
+   204	  printSet(diff);
+   205	  
+   206	  return EXIT_SUCCESS;
+   207	}
+5% cat -n SetInterface.h 
+     1	/** @file
+     2	 
+     3	    @course CS1521
+     4	    @section 9
+     5	    @term Spring 2021
+     6	 
+     7	    SetInterface class template definition adapted from BagInterface.
+     8	
+     9	    Adapted from page 24-25 in Carrano 7e.
+    10	 
+    11	    @author Frank M. Carrano
+    12	    @author Timothy Henry
+    13	    @author Steve Holtz
+    14	    @author Reece Holmdahl (5727889)
+    15	 
+    16	    @date 13 Feb 2021
+    17	    
+    18	    @version 7.0 */
+    19	
+    20	#ifndef SET_INTERFACE_
+    21	#define SET_INTERFACE_
+    22	
+    23	#include <vector>
+    24	
+    25	/** @class SetInterface SetInterface.h "SetInterface.h"
+    26	    SetInterface abstract base class template. */
+    27	template <typename ItemType>
+    28	class SetInterface {
+    29	public:
+    30	  
+    31	  /** Virtual destructor. */
+    32	  virtual ~SetInterface() {}
+    33	
+    34	  /** Gets the current number of elements in this set.
+    35	      @return The integer number of elements currently in the set. */
+    36	  virtual int getCurrentSize() const = 0;
+    37	
+    38	  /** Checks whether this set is the empty set.
+    39	      @return True if the set contains no elements, or false if otherwise. */
+    40	  virtual bool isEmpty() const = 0;
+    41	
+    42	  /** Adds a new element to this set.
+    43	      @pre There must not already be an instance of newElement within the set.
+    44	
+    45	      @post If successful, newElement is an element of the set and the size of the set has increased by 1.
+    46	
+    47	      @param[in] newElement The object to be added as a new element.
+    48	
+    49	      @return True if the addition was successful, or false is not. */
+    50	  virtual bool add(const ItemType& newElement) = 0;
+    51	
+    52	  /** Removes an element from this set if possible.
+    53	      @pre There must be an instance of anElement within the set.
+    54	
+    55	      @post If successful, anElement was removed from the set and the size of the set has decreased by 1.
+    56	
+    57	      @param[in] anElement The value of the element to be removed.
+    58	
+    59	      @return True if the removal was successful, or false if not. */
+    60	  virtual bool remove(const ItemType& anElement) = 0;
+    61	
+    62	  /** Removes all elements from this set. It becomes the empty set.
+    63	      @post This set contains no elements and its size is 0. */
+    64	  virtual void clear() = 0;
+    65	
+    66	  /** Counts the number of times a given element appears in the set.
+    67	      @param[in] anElement The value of the element to be counted.
+    68	
+    69	      @return The number of times anElement appears in the set.*/
+    70	  virtual int getFrequencyOf(const ItemType& anElement) const = 0;
+    71	
+    72	  /** Checks whether this set contains a given element.
+    73	      @param[in] anElement The value of the element to locate.
+    74	
+    75	      @return True if this set contains anElement, or false if not. */
+    76	  virtual bool contains(const ItemType& anElement) const = 0;
+    77	
+    78	  /** Converts this set into a vector.
+    79	      @return A vector containing each element of this set. */
+    80	  virtual std::vector<ItemType> toVector() const = 0;
+    81	};
+    82	
+    83	#endif // SET_INTERFACE_
+6% cat -n ArraySet.h
+     1	/** @file
+     2	 
+     3	    @course CS1521
+     4	    @section 9
+     5	    @term Spring 2021
+     6	 
+     7	    Header file for an array-based implementation of the ADT set.
+     8	    
+     9	    Adapted from page 100 in Carrano 7e.
+    10	 
+    11	    @author Frank M. Carrano
+    12	    @author Timothy Henry
+    13	    @author Steve Holtz
+    14	    @author Reece Holmdahl (5727889)
+    15	 
+    16	    @date 13 Feb 2021
+    17	    
+    18	    @version 7.0 */
+    19	
+    20	#ifndef ARRAY_SET_
+    21	#define ARRAY_SET_
+    22	
+    23	#include <vector>
+    24	
+    25	#include "SetInterface.h"
+    26	
+    27	/** @class ArraySet ArraySet.h "ArraySet.h"
+    28	    Specification of an array-based ADT set. */
+    29	template <typename ItemType>
+    30	class ArraySet : public SetInterface<ItemType> {
+    31	private:
+    32	  
+    33	  /** Maximum capacity of this set. Low number for testing purposes. */
+    34	  static const int DEFAULT_CAPACITY = 6;
+    35	
+    36	  /** Element data storage. */
+    37	  ItemType elements[DEFAULT_CAPACITY];
+    38	
+    39	  /** Number of elements in this set. */
+    40	  int size = 0;
+    41	
+    42	  /** Maximum capacity of this set. */
+    43	  int maxSize = DEFAULT_CAPACITY;
+    44	
+    45	  /** Gets the index of target in the array 'elements' in this set.
+    46	      @param target The ItemType value to retrieve the index of.
+    47	   
+    48	      @return The index of 'target' in the array 'elements', or -1 if the array does not contain 'target'. */
+    49	  int getIndexOf(const ItemType& target) const;
+    50	
+    51	public:
+    52	  
+    53	  /** Default constructor. */
+    54	  ArraySet() = default;
+    55	
+    56	  /** Virtual destructor, using default. */
+    57	  virtual ~ArraySet() = default;
+    58	
+    59	  virtual int getCurrentSize() const;
+    60	
+    61	  virtual bool isEmpty() const;
+    62	
+    63	  virtual bool add(const ItemType& newElement);
+    64	
+    65	  virtual bool remove(const ItemType& anElement);
+    66	
+    67	  virtual void clear();
+    68	
+    69	  virtual int getFrequencyOf(const ItemType& anElement) const;
+    70	
+    71	  virtual bool contains(const ItemType& anElement) const;
+    72	
+    73	  virtual std::vector<ItemType> toVector() const;
+    74	
+    75	  /** Creates a new set containing all of the items in this set that are not in 'set2'.
+    76	      @param[in] set2 The ArraySet of the same item type to take the difference with.
+    77	
+    78	      @return The ArraySet of the same item type representing the difference between this set and 'set2'. */
+    79	  virtual ArraySet<ItemType> difference(const ArraySet<ItemType>& set2) const;
+    80	};
+    81	
+    82	#include "ArraySet.cpp"
+    83	
+    84	#endif // ARRAY_SET_
+7% cat -n ArraySet.h[Kcpp
+     1	/** @file
+     2	 
+     3	    @course CS1521
+     4	    @section 9
+     5	    @term Spring 2021
+     6	 
+     7	    Implementation file for the class ArraySet.
+     8	 
+     9	    Adapted from pages 101-111 in Carrano 7e.
+    10	 
+    11	    @author Frank M. Carrano
+    12	    @author Timothy Henry
+    13	    @author Steve Holtz
+    14	    @author Reece Holmdahl (5727889)
+    15	 
+    16	    @date 13 Feb 2021
+    17	   
+    18	    @version 7.0 */
+    19	
+    20	#include <vector>
+    21	
+    22	using std::vector;
+    23	
+    24	template <typename ItemType>
+    25	int ArraySet<ItemType>::getCurrentSize() const {
+    26	
+    27	  return size;
+    28	}
+    29	
+    30	template <typename ItemType>
+    31	bool ArraySet<ItemType>::isEmpty() const {
+    32	
+    33	  return !size;
+    34	}
+    35	
+    36	template <typename ItemType>
+    37	bool ArraySet<ItemType>::add(const ItemType& newElement) {
+    38	
+    39	  bool hasRoomToAdd(size < maxSize);
+    40	  bool alreadyContains(contains(newElement) );
+    41	  bool canAdd(hasRoomToAdd && !alreadyContains);
+    42	
+    43	  if (canAdd) {
+    44	    elements[size] = newElement;
+    45	    ++size;
+    46	  }
+    47	
+    48	  return canAdd;
+    49	}
+    50	
+    51	template <typename ItemType>
+    52	bool ArraySet<ItemType>::remove(const ItemType& anElement) {
+    53	
+    54	  int locatedIndex(getIndexOf(anElement) );
+    55	  bool canRemoveItem(locatedIndex > -1);
+    56	
+    57	  if (canRemoveItem) {
+    58	    --size;
+    59	    elements[locatedIndex] = elements[size];
+    60	  }
+    61	
+    62	  return canRemoveItem;
+    63	}
+    64	
+    65	template <typename ItemType>
+    66	void ArraySet<ItemType>::clear() {
+    67	
+    68	  size = 0;
+    69	}
+    70	
+    71	template <typename ItemType>
+    72	bool ArraySet<ItemType>::contains(const ItemType& anElement) const {
+    73	
+    74	  // Return the frequency of anElement which can either be 1 (true) or 0 (false).
+    75	  return getFrequencyOf(anElement);
+    76	}
+    77	
+    78	template <typename ItemType>
+    79	int ArraySet<ItemType>::getFrequencyOf(const ItemType& anElement) const {
+    80	
+    81	  // A set can only contain 1 entry of an element, so if it finds one, return 1.
+    82	  for (int index(0); index < size; ++index) {
+    83	    if (elements[index] == anElement) {
+    84	      return 1;
+    85	    }
+    86	  }
+    87	
+    88	  return 0;
+    89	}
+    90	
+    91	template <typename ItemType>
+    92	vector<ItemType> ArraySet<ItemType>::toVector() const {
+    93	
+    94	  vector<ItemType> setContents;
+    95	
+    96	  for (int index(0); index < size; ++index) {
+    97	    setContents.push_back(elements[index]);
+    98	  }
+    99	
+   100	  return setContents;
+   101	}
+   102	
+   103	template <typename ItemType>
+   104	ArraySet<ItemType> ArraySet<ItemType>::difference(const ArraySet<ItemType>& set2) const {
+   105	
+   106	  ArraySet<ItemType> difference;
+   107	
+   108	  vector<ItemType> set1Contents = toVector();
+   109	
+   110	  for (int index(0); index < size; ++index) {
+   111	    ItemType item(set1Contents[index]);
+   112	    if (!set2.contains(item) ) {
+   113	      
+   114	      difference.add(item);
+   115	    }
+   116	  }
+   117	  
+   118	  return difference;
+   119	} // STUB
+   120	
+   121	template <typename ItemType>
+   122	int ArraySet<ItemType>::getIndexOf(const ItemType& target) const {
+   123	
+   124	  // Search for target and return its index if found.
+   125	  for (int index(0); index < size; ++index) {
+   126	    if (elements[index] == target) {
+   127	      return index;
+   128	    }
+   129	  }
+   130	
+   131	  // If it's made it this far, no occurrence of target in this set.
+   132	  return -1;
+   133	}
+8% git --no-pager log --no-color
+commit b14b75e3d09d43d0a255a6d9e9524e34f78ef198 (HEAD -> master)
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 13 14:01:21 2021 -0600
+
+    Finished required testing routine and added 2 additional tests.
+
+commit b12b958359e91738b3b6b11c0ddb7140fd980e16
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 13 13:31:35 2021 -0600
+
+    Added ID to top or @file of all submission files. Started working on testing routine.
+
+commit 737bdbdac3920dd868765c5d6892dd621b6a7376
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 13 12:57:17 2021 -0600
+
+    Made first draft of difference method, will now add testing routines to lab3.cpp to verify if it works.
+
+commit 7f3e0fd9bd6c037012008a515f71ed2e8a064c3c
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 13 12:40:29 2021 -0600
+
+    Updated all @params to include [in] and/or [out] tags to specify parameter direction. Added difference signature and specs to ArraySet header file and created stub in ArraySet implementation file.
+
+commit 2d7ddf6d079530af1565b290331a289938de3486
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 13 12:15:39 2021 -0600
+
+    Used driver file to test out functionality of ArraySet implementation as per part 1. Everything appears to be working as expected.
+
+commit d5f83744d945e9b7d2d394004bc84d9bd64c7cce
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 13 10:54:24 2021 -0600
+
+    Made stub driver file lab3.cpp, added CMakeLists.txt that properly generated CMake files, and made a git ignore to exclude build directory from this repo.
+
+commit dfe2e81ea373b43d73f6660226c4c025d2db42ca
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 13 10:49:46 2021 -0600
+
+    Slightly changed implementation in ArraySet.cpp with old code as guidelines. Will make CMakeLists.txt now and test compilation, then begin testing.
+
+commit f16e8277cc33f80125abd2eaa9bca62f4c27f048
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 13 10:36:39 2021 -0600
+
+    Updated header file for ADT set to reflect new behavior and match SetInterface.h
+
+commit 7a0f5aaa1282922b701cda3bdb59938915673fc0
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 13 10:22:32 2021 -0600
+
+    Got rid of old comment guidelines, went through new comments to check clarity and am happy with new method signatures so far.
+
+commit 2bf2449de7b056b61f123dd49e9658e794c15cbc
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 13 10:10:58 2021 -0600
+
+    Used old comments as guidelines and rewrote all comments and updated method signatures. Thinking about removing getFrequencyOf because it is quite redundant for a set because it can either contain an element or not. Will ask TA.
+
+commit d9857178e31a2fe4670ec1c09cb8e66a43be68f6
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 13 09:47:47 2021 -0600
+
+    Added and renamed base header files to the repo.
+9% cd buid[Kld/
+10% make
+[ 50%] [32mBuilding CXX object CMakeFiles/lab3.dir/lab3.cpp.o[0m
+[100%] [32m[1mLinking CXX executable lab3[0m
+[100%] Built target lab3
+11% ./lab3
+1: ArraySet doesn't allow duplicates:
+Set1:
+Printing set.
+The set is empty.
+
+Attempting to add hey! to the set (should be 1): 1
+Attempting to add hello! to the set (should be 1): 1
+Attempting to add hey! to the set (should be 0): 0
+
+Set1:
+Printing set.
+Element: hey!
+Element: hello!
+
+2: Both LHS and RHS are empty:
+Set1:
+Printing set.
+The set is empty.
+
+Set2:
+Printing set.
+The set is empty.
+
+Difference Set1 to Set2:
+Printing set.
+The set is empty.
+
+3: LHS is empty, RHS has items:
+Set1:
+Printing set.
+The set is empty.
+
+Set2:
+Printing set.
+Element: hello
+Element: goodbye
+Element: bonjour
+
+Difference Set1 to Set2:
+Printing set.
+The set is empty.
+
+4: RHS is empty, LHS has items:
+Set1:
+Printing set.
+Element: twist
+Element: fred
+Element: johnny5
+
+Set2:
+Printing set.
+The set is empty.
+
+Difference Set1 to Set2:
+Printing set.
+Element: twist
+Element: fred
+Element: johnny5
+
+5: LHS and RHS have items without intersection:
+Set1:
+Printing set.
+Element: twist
+Element: fred
+Element: johnny5
+
+Set2:
+Printing set.
+Element: hello
+Element: goodbye
+Element: bonjour
+
+Difference Set1 to Set2:
+Printing set.
+Element: twist
+Element: fred
+Element: johnny5
+
+6: LHS and RHS have items with partial intersection:
+Set1:
+Printing set.
+Element: twist
+Element: fred
+Element: johnny5
+
+Set2:
+Printing set.
+Element: hello
+Element: goodbye
+Element: bonjour
+Element: twist
+
+Difference Set1 to Set2:
+Printing set.
+Element: fred
+Element: johnny5
+
+7: LHS and RHS have complete intersection:
+Set1:
+Printing set.
+Element: testing
+Element: identical
+Element: sets
+
+Set2:
+Printing set.
+Element: testing
+Element: identical
+Element: sets
+
+Difference Set1 to Set2:
+Printing set.
+The set is empty.
+
+(additional) 8: LHS has every element in RHS plus more:
+Set1:
+Printing set.
+Element: testing
+Element: identical
+Element: sets
+Element: extra
+Element: stuff
+
+Set2:
+Printing set.
+Element: testing
+Element: identical
+Element: sets
+
+Difference Set1 to Set2:
+Printing set.
+Element: extra
+Element: stuff
+
+(additional) 9: RHS has every element in LHS plus more:
+Set1:
+Printing set.
+Element: testing
+Element: identical
+Element: sets
+Element: extra
+Element: stuff
+
+Set2:
+Printing set.
+Element: testing
+Element: identical
+Element: sets
+
+Difference Set2 to Set1 (switched operands):
+Printing set.
+The set is empty.
+
+12% exit
+exit
+
+Script done on 2021-02-16 11:22:33-0600

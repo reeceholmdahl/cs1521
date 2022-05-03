@@ -1,0 +1,61 @@
+Notes
+
+Implementation requirements evaluated
+1. Single float entry method <==> adding to an accumulator: addDataPoint(double point) --> accumulator += point;
+2. Find N by incrementing a counter of data points on addDataPoint calls
+3. Set the last number in the sequence to point every time addDataPoint(point) is called
+4. return accumulator
+5. accumulator / N --> see 2 and 4
+6. every call of addDataPoint check if point < minimum
+7. every call of addDataPoint check if point > maximum
+8. accumulator = 0, N = 0, minimum = 0, maximum = 0
+9. no errors allowed, duh
+10. protection against calls on empty sequence, think about how to signify this: technically not required?
+11. class header file with "proper preprocessor guards", declare all methods
+12. implementation class file
+13. "driver" file which tests all the code in a main method. ALL the code
+
+Class definition bits
+1. proper method names
+2. default constructor initialize everything at 0
+3. javadocs explaining what a method does?
+4. private class members
+
+Test all functionality on...
+a. an empty sequence
+b. a single valued sequence
+c. an increasing sequence
+d. a decreasing sequence
+e. a random sequence
+f. a constant sequence
+g. other areas of interest; fibonacci, sum0 sequence, squares sequence, cubes sequence, digits of pi
+
+Typescript pre-reqs
+1. go to "build" and
+   a. make clean
+   cd ..
+2. script typescript.txt
+
+Typescript requirements
+1. pwd
+2. pwd with long list arg: figure this out
+3. cat -n CMakeLists.txt
+4. cat -n tests.cpp
+5. cat -n headerFile
+6. cat -n sourceFile
+7. cd ./build
+8. make with UNIX make, not cmake
+9. execute program
+10. exit
+
+Additional points
+1. need a "modern?" cmake file within a "build" subdirectory
+2. comment on every file first line student ID number
+3. turn in on canvas
+4. also turn in to "turnin-dir" on janus server
+5. TA name Asif Mahmud --> user: mahmu037
+6. submitting to ~mahmu037/turnin-dir as project1? or possibly something else because everyone is going to want to use project1
+7. copy/cut/paste in emacs and also completion in emacs and UNIX
+
+Misc stuff
+- use #ifndef or #pragma once?

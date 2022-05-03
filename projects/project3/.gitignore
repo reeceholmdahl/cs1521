@@ -1,0 +1,4 @@
+# ignore out of source build directory
+build/
+test-files/
+qrun

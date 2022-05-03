@@ -1,0 +1,376 @@
+Script started on 2021-03-30 14:12:23-0500
+1% pwd
+/home/csugrads/holmd353/labs/lab6
+2% ls -l
+total 64
+drwxr-xr-x 3 holmd353 student 4096 Mar 30 14:07 build
+-rw------- 1 holmd353 student  338 Mar 30 14:07 CMakeLists.txt
+-rw------- 1 holmd353 student  706 Mar 30 14:10 isPalindrome.cpp
+-rw------- 1 holmd353 student  285 Mar 30 14:07 isPalindrome.h
+-rwx------ 1 holmd353 student 2189 Mar 30 14:07 LinkedQueue.cpp
+-rwx------ 1 holmd353 student 1047 Mar 30 14:07 LinkedQueue.h
+-rwx------ 1 holmd353 student 1925 Mar 30 14:07 LinkedStack.cpp
+-rwx------ 1 holmd353 student 1006 Mar 30 14:07 LinkedStack.h
+-rw------- 1 holmd353 student 1720 Mar 30 14:07 main.cpp
+-rwx------ 1 holmd353 student 1217 Mar 30 14:07 Node.cpp
+-rwx------ 1 holmd353 student 1941 Mar 30 14:07 Node.h
+-rwx------ 1 holmd353 student  507 Mar 30 14:07 PrecondViolatedExcep.cpp
+-rwx------ 1 holmd353 student  771 Mar 30 14:07 PrecondViolatedExcep.h
+-rwx------ 1 holmd353 student 1634 Mar 30 14:07 QueueInterface.h
+-rwx------ 1 holmd353 student 1647 Mar 30 14:07 StackInterface.h
+drwxr-xr-x 2 holmd353 student 4096 Mar 30 14:07 test
+-rw------- 1 holmd353 student    0 Mar 30 14:12 typescript.txt
+3% cat - n CMakeLists.txt
+     1	#
+     2	cmake_minimum_required(VERSION 3.10)
+     3	
+     4	project("Lab 6"
+     5	  VERSION 0.0.0
+     6	  DESCRIPTION "Lab 6 stacks/queues palindrome"
+     7	  LANGUAGES CXX)
+     8	
+     9	add_compile_options(-Wall -Wextra -Wpedantic)
+    10	
+    11	set(CXX_STANDARD 17)
+    12	set(CXX_STANDARD_REQUIRED ON)
+    13	set(CXX_EXTENSIONS OFF)
+    14	
+    15	add_executable(lab6
+    16	  main.cpp
+    17	  isPalindrome.cpp
+    18	  PrecondViolatedExcep.cpp)
+4% cat -n main.cpp 
+     1	#include <iostream>
+     2	#include <string>
+     3	#include <vector>
+     4	
+     5	#include "isPalindrome.h"
+     6	
+     7	int main() {
+     8	
+     9	   std::vector<std::string> strVec = { "",
+    10	                                       "a",
+    11	                                       "aba",
+    12	                                       "abba",
+    13	                                       "deleveled",
+    14	                                       "A man, a plan, a canal: Panama",
+    15	                                       "ab",
+    16	                                       "abbc" };
+    17	
+    18	   // Range-based 'for' loop:
+    19	   for (const std::string& currStr : strVec) {
+    20	      // Initialize a 'clean' string to empty:
+    21	      std::string clean; // A default-constructed std::string is ""
+    22	                         // (the empty string).
+    23	
+    24	      // Another, nested range-based 'for' loop.
+    25	      // Iterate over the characters in 'currStr' and concatenate all
+    26	      // characters, except for space characters, to the string
+    27	      // 'clean':
+    28	      for (char ch : currStr) {
+    29	         // If 'ch' is uppercase, then convert it to lowercase:
+    30	         if (ch >= 'A' && ch <= 'Z') {
+    31	            ch += 'a' - 'A';
+    32	         }
+    33	         // Append 'ch' to 'clean' string only if it is alpha:
+    34	         if (ch >= 'a' && ch <= 'z') {
+    35	            clean += ch;
+    36	         }
+    37	      }
+    38	
+    39	      // Test and report whether the string 'clean' contains a
+    40	      // palindrome:
+    41	      if (isPalindrome(clean) ) {
+    42	         std::cout << "YES \""
+    43	                   << currStr
+    44	                   << "\" is a palindrome."
+    45	                   << std::endl;
+    46	      }
+    47	      else {
+    48	         std::cout << "NO \""
+    49	                   << currStr
+    50	                   << "\" is not a palindrome."
+    51	                   << std::endl;
+    52	      }
+    53	   }
+    54	
+    55	   return EXIT_SUCCESS;
+    56	}
+5% cat -n is[KsPalindrome.h
+     1	#ifndef IS_PALINDROME_
+     2	#define IS_PALINDROME_
+     3	
+     4	#include <string>
+     5	
+     6	/** Is 'aString' a palidrome?
+     7	 *
+     8	 * @param aString The string to test.
+     9	 *
+    10	 * @return True if 'aString' holds a value that is a palidrome, else
+    11	 *         false. */
+    12	bool isPalindrome(const std::string& aString);
+    13	
+    14	#endif
+6% cat -n isPalindrome.cpp
+     1	// My ID: 5727889
+     2	#include <new>
+     3	#include <iostream>
+     4	
+     5	#include "isPalindrome.h"
+     6	#include "LinkedStack.h"
+     7	#include "LinkedQueue.h"
+     8	
+     9	bool isPalindrome(const std::string& aString) {
+    10	
+    11	  try {
+    12	    LinkedStack<char> stack;
+    13	    LinkedQueue<char> queue;
+    14	  
+    15	    for (char c : aString) {
+    16	      stack.push(c);
+    17	      queue.enqueue(c);
+    18	    }
+    19	
+    20	    try {
+    21	      while (!stack.isEmpty() ) {
+    22		if (stack.peek() == queue.peekFront() ) {
+    23		  stack.pop();
+    24		  queue.dequeue();
+    25		} else {
+    26		  return false;
+    27		}
+    28	      }
+    29	    } catch (const PrecondViolatedExcep&) {
+    30	      return false;
+    31	    }
+    32	
+    33	    return true;
+    34	  } catch (const std::bad_alloc&) {
+    35	    std::cerr << "Memory allocation error. Exiting." << std::endl;
+    36	    return false;
+    37	  }
+    38	}
+7% cat -n LinkedStack.[K.h
+     1	/** @file
+     2	 *
+     3	 *  @course CS1521
+     4	 *  @section 1
+     5	 *  @term Spring 2021
+     6	 *
+     7	 *  Header file for a pointer-based implementation of the ADT stack.
+     8	 *
+     9	 *  Adapted from page 246 in Carrano 7e.
+    10	 *
+    11	 *  @author Frank M. Carrano
+    12	 *  @author Timothy Henry
+    13	 *  @author Steve Holtz
+    14	 *  @author Reece Holmdahl (5727889)
+    15	 *
+    16	 *  @date 18 Feb 2021
+    17	 *
+    18	 *  @version 7.0 */
+    19	
+    20	#ifndef LINKED_STACK_
+    21	#define LINKED_STACK_
+    22	
+    23	#include <memory>
+    24	
+    25	#include "StackInterface.h"
+    26	#include "Node.h"
+    27	
+    28	/** @class LinkedStack LinkedStack.h "LinkedStack.h"
+    29	 *
+    30	 *  Specification of a pointer-based ADT stack. */
+    31	template <typename ItemType>
+    32	class LinkedStack : public StackInterface<ItemType> {
+    33	private:
+    34	
+    35	  std::shared_ptr<Node<ItemType>> topPtr;
+    36	
+    37	public:
+    38	   LinkedStack() = default;
+    39	
+    40	   LinkedStack(const LinkedStack<ItemType>& aStack);
+    41	
+    42	   virtual ~LinkedStack();
+    43	
+    44	   virtual bool isEmpty() const;
+    45	
+    46	   virtual bool push(const ItemType& newEntry);
+    47	
+    48	   virtual bool pop();
+    49	
+    50	   virtual ItemType peek() const;
+    51	};
+    52	
+    53	#include "LinkedStack.cpp"
+    54	
+    55	#endif
+8% cat -n LinkedStack.h[Kcpp
+     1	/** @file
+     2	 *
+     3	 *  @course CS1521
+     4	 *  @section 1
+     5	 *  @term Spring 2021
+     6	 *
+     7	 *  Implementation file for a pointer-based implementation of the ADT
+     8	 *  stack.
+     9	 *
+    10	 *  Adapted from pages 246-8 in Carrano 7e.
+    11	 *
+    12	 *  @author Frank M. Carrano
+    13	 *  @author Timothy Henry
+    14	 *  @author Steve Holt
+    15	 *  @author Reece Holmdahl (5727889)
+    16	 *
+    17	 *  @date 18 Feb 2021
+    18	 *
+    19	 *  @version 7.0 */
+    20	
+    21	// #define NDEBUG
+    22	
+    23	#include <memory>
+    24	#include <new>
+    25	
+    26	#include <cassert>
+    27	
+    28	template <typename ItemType>
+    29	LinkedStack<ItemType>::LinkedStack(const LinkedStack<ItemType>& aStack) {
+    30	
+    31	   if (!aStack.topPtr) {
+    32	      topPtr = nullptr;
+    33	   }
+    34	   else {
+    35	     auto origChainPtr(aStack.topPtr);
+    36	
+    37	     try {
+    38	       topPtr = std::make_shared<Node<ItemType>>(origChainPtr->getItem() );
+    39	
+    40	       auto newChainPtr(topPtr);
+    41	
+    42	       origChainPtr = origChainPtr->getNext();
+    43	
+    44	       while (origChainPtr) {
+    45		 newChainPtr->setNext(std::make_shared<Node<ItemType>>(origChainPtr->getItem()) );
+    46	
+    47		 newChainPtr = newChainPtr->getNext();
+    48		 origChainPtr = origChainPtr->getNext();
+    49	       }
+    50	      }
+    51	      catch (const std::bad_alloc&) {
+    52	         while (!isEmpty() ) {
+    53	            pop();
+    54	         }
+    55	         throw;
+    56	      }
+    57	   }
+    58	}
+    59	
+    60	template <typename ItemType>
+    61	LinkedStack<ItemType>::~LinkedStack() {
+    62	
+    63	   while (!isEmpty() ) {
+    64	      pop();
+    65	   }
+    66	}
+    67	
+    68	template <typename ItemType>
+    69	bool LinkedStack<ItemType>::isEmpty() const {
+    70	
+    71	   return !topPtr;
+    72	}
+    73	
+    74	template <typename ItemType>
+    75	bool LinkedStack<ItemType>::push(const ItemType& newItem) {
+    76	
+    77	   try {
+    78	     topPtr = std::make_shared<Node<ItemType>>(newItem, topPtr);
+    79	   }
+    80	   catch (const std::bad_alloc&) {
+    81	      return false;
+    82	   }
+    83	
+    84	   return true;
+    85	}
+    86	
+    87	template <typename ItemType>
+    88	bool LinkedStack<ItemType>::pop() {
+    89	
+    90	   if (!isEmpty() ) {
+    91	     topPtr = topPtr->getNext();
+    92	
+    93	     return true;
+    94	   }
+    95	
+    96	   return false;
+    97	}
+    98	
+    99	template <typename ItemType>
+   100	ItemType LinkedStack<ItemType>::peek() const {
+   101	
+   102	   assert(!isEmpty() );
+   103	
+   104	   return topPtr->getItem();
+   105	}
+9% ls
+build		  isPalindrome.h   LinkedStack.cpp  Node.cpp		      PrecondViolatedExcep.h  test
+CMakeLists.txt	  LinkedQueue.cpp  LinkedStack.h    Node.h		      QueueInterface.h	      typescript.txt
+isPalindrome.cpp  LinkedQueue.h    main.cpp	    PrecondViolatedExcep.cpp  StackInterface.h
+10% 
+10% git --no-pager log --no-color
+commit 141783cecb3f672b6132251caf46c49659f1dea4 (HEAD -> master)
+Author: Reece Holmdahl <rholmdahl@gmail.com>
+Date:   Tue Mar 30 14:11:48 2021 -0500
+
+    Updated cmakelists to include PrecondViolatedExcep, and added try-catch block to catch that kind of exception in isPalindrome
+
+commit 447818a926fa58e3c1c2f4b790a96774b35f1535
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 30 13:58:51 2021 -0500
+
+    Fixed small errors in implementation, added precond violated files and added them to cmake lists.
+
+commit 9f17176d68ee911a98338908403a237975e31bb0
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 30 13:55:43 2021 -0500
+
+    Made smart pointer adaptation to linked stack, made first draft of isPalindrome algorithm, and made cmake lists.
+
+commit 25ada5767b98f7c5da68bb992a8308938cf24274
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 30 13:28:22 2021 -0500
+
+    Added other base files to directory. Will update linked stack implementation to use smart pointers and safe mem mgmt.
+
+commit 7832d63998fd5002f96c2e6dfbbab32da473afa5
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 30 13:20:44 2021 -0500
+
+    Made build dir and gitignore
+
+commit 78fd9d16ffdab6631c4e2481d07f94feb0e44ef7
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 30 13:20:12 2021 -0500
+
+    Added base files to directory.
+11% cd build/
+12% make
+[35m[1mScanning dependencies of target lab6[0m
+[ 25%] [32mBuilding CXX object CMakeFiles/lab6.dir/main.cpp.o[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/lab6.dir/isPalindrome.cpp.o[0m
+[ 75%] [32mBuilding CXX object CMakeFiles/lab6.dir/PrecondViolatedExcep.cpp.o[0m
+[100%] [32m[1mLinking CXX executable lab6[0m
+[100%] Built target lab6
+13% ./labb[K6
+YES "" is a palindrome.
+YES "a" is a palindrome.
+YES "aba" is a palindrome.
+YES "abba" is a palindrome.
+YES "deleveled" is a palindrome.
+YES "A man, a plan, a canal: Panama" is a palindrome.
+NO "ab" is not a palindrome.
+NO "abbc" is not a palindrome.
+14% exit
+exit
+
+Script done on 2021-03-30 14:13:39-0500

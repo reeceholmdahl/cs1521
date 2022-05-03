@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 0a724bcc2e56eb40df52e96998fbe561b2138c04 Reece Holmdahl <reece.holmdahl@fastmail.com> 1618333497 -0500	commit (initial): Copied base files from janus
+0a724bcc2e56eb40df52e96998fbe561b2138c04 1b0abfc02d104d9512e0fa597e76236ad67d586e Reece Holmdahl <reece.holmdahl@fastmail.com> 1618333526 -0500	commit: Added gitignore
+1b0abfc02d104d9512e0fa597e76236ad67d586e 68d415d71e1d500af87feffc29371bb8327d14df Reece Holmdahl <reece.holmdahl@fastmail.com> 1618333606 -0500	commit: Made stub of main.cpp, compilation works successfully in build dir (hidden by gitignore)
+68d415d71e1d500af87feffc29371bb8327d14df 9a28d1b30fcad406c5ee3e8658531c9d5542c71e Reece Holmdahl <reece.holmdahl@fastmail.com> 1618337556 -0500	commit: Successfully implemented rot5_rot13 algorithm using character input selection and ternary operator logic to bound characters in 'A'-'Z', 'a'-'z', and '0'-'9'
+9a28d1b30fcad406c5ee3e8658531c9d5542c71e ad8eaf6ed19dae6c3cb669c6581adc1b316aec71 Reece Holmdahl <reece.holmdahl@fastmail.com> 1618337822 -0500	commit: Finished implementation and formatting of main.cpp

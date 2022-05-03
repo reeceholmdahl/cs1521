@@ -1,0 +1,1080 @@
+Script started on 2021-04-06 16:07:52-0500
+#### PART 2 - THREE TELLER VERSION ####
+1% pwd
+/home/csugrads/holmd353/projects/project6/threeTeller
+2% ls -l
+total 68
+-rw------- 1 holmd353 student 1384 Apr  6 16:00 EventBuilder.cpp
+-rw------- 1 holmd353 student 1493 Apr  6 16:00 EventBuilder.h
+-rw------- 1 holmd353 student   16 Apr  6 15:55 input0.dat
+-rw------- 1 holmd353 student    0 Apr  6 15:55 input1.dat
+-rw------- 1 holmd353 student   17 Apr  6 15:55 input2.dat
+-rw------- 1 holmd353 student   23 Apr  6 15:55 input3.dat
+-rw------- 1 holmd353 student   47 Apr  6 15:55 input4.dat
+-rw------- 1 holmd353 student  870 Apr  6 15:55 input5.dat
+-rw------- 1 holmd353 student 1748 Apr  6 15:55 input6.dat
+-rw------- 1 holmd353 student 2940 Apr  6 15:55 input7.dat
+-rw------- 1 holmd353 student  191 Apr  6 16:01 project6.cpp
+-rw------- 1 holmd353 student 6075 Apr  6 15:55 README
+-rw------- 1 holmd353 student 3208 Apr  6 16:01 Simulation.cpp
+-rw------- 1 holmd353 student  929 Apr  6 16:01 Simulation.h
+-rw------- 1 holmd353 student 4602 Apr  6 16:01 Statistics.cpp
+-rw------- 1 holmd353 student 1363 Apr  6 16:01 Statistics.h
+-rw------- 1 holmd353 student    0 Apr  6 16:07 typescript.txt
+3% cat -n C[K../CMA[KakeLists.txt 
+     1	# My ID: 5727889
+     2	# Master CMakeLists.txt file: covers both oneTeller and threeTeller binaries.
+     3	cmake_minimum_required(VERSION 3.10)
+     4	
+     5	project("Project6 Bank Simulation"
+     6	  VERSION 0.0.0
+     7	  DESCRIPTION "Project6, two execs: one teller, and three teller"
+     8	  LANGUAGES CXX)
+     9	
+    10	add_compile_options(-Wall -Wextra -Wpedantic)
+    11	
+    12	set(CXX_STANDARD 17)
+    13	set(CXX_STANDARD_REQUIRED ON)
+    14	set(CXX_EXTENSIONS OFF)
+    15	
+    16	add_executable(oneTeller
+    17	  oneTeller/project6.cpp
+    18	  Event.cpp
+    19	  PrecondViolatedExcep.cpp
+    20	  oneTeller/EventBuilder.cpp
+    21	  oneTeller/Statistics.cpp
+    22	  oneTeller/Simulation.cpp)
+    23	
+    24	add_executable(threeTeller
+    25	  threeTeller/project6.cpp
+    26	  Event.cpp
+    27	  PrecondViolatedExcep.cpp
+    28	  threeTeller/EventBuilder.cpp
+    29	  threeTeller/Statistics.cpp
+    30	  threeTeller/Simulation.cpp)
+4% cat -n project6.cpp 
+     1	// My ID: 5727889
+     2	// This file is part of the threeTeller version
+     3	#include <cstdlib>
+     4	
+     5	#include "Simulation.h"
+     6	
+     7	int main() {
+     8	
+     9	   Simulation sim;
+    10	
+    11	   sim.simulate();
+    12	
+    13	   return EXIT_SUCCESS;
+    14	}
+5% cat -n Stat
+Statistics.cpp  Statistics.h    
+5% cat -n Statistics.h
+     1	// My ID: 5727889
+     2	// This file is part of the threeTeller version
+     3	#ifndef STATISTICS_
+     4	#define STATISTICS_
+     5	
+     6	//#define TESTING
+     7	
+     8	#include "../Event.h"
+     9	#include "../LinkedQueue.h"
+    10	
+    11	class Statistics {
+    12	private:
+    13	   int countTotal = 0;
+    14	
+    15	   int count1 = 0;
+    16	   int count2 = 0;
+    17	   int count3 = 0;
+    18	
+    19	   Time waitTimeTotal = 0;
+    20	
+    21	   Time waitTime1 = 0;
+    22	   Time waitTime2 = 0;
+    23	   Time waitTime3 = 0;
+    24	
+    25	   /** Arrival events get stored until we encounter the next departure
+    26	    *  event.  This arrival along with the departure are then used to
+    27	    *  generate the wait time of this arrival. */
+    28	   LinkedQueue<Event> arrivalEvents1;
+    29	   LinkedQueue<Event> arrivalEvents2;
+    30	   LinkedQueue<Event> arrivalEvents3;
+    31	
+    32	public:
+    33	   Statistics() = default;
+    34	
+    35	   virtual ~Statistics() = default;
+    36	
+    37	   /** Adds 'event' to the statistics collected so far.
+    38	    *
+    39	    * If 'event' is an arrival event, increment 'countTotal' and the
+    40	    * count associated with the line this customer is in and store it
+    41	    * for use with the next departure event.
+    42	    *
+    43	    * If 'event' is a departure event, calculate the wait time for
+    44	    * this customer and add it onto 'waitTimeTotal' and add it to the
+    45	    * wait time associated with the line this customer was in. */
+    46	   void addEvent(const Event& event);
+    47	
+    48	   /** Output a report of the statistics for this simulation. */
+    49	   void reportStats() const;
+    50	};
+    51	
+    52	#endif
+6% cat -n Statistics.h[Kcpp
+     1	// My ID: 5727889
+     2	// This file is part of the threeTeller version
+     3	#include <iostream>
+     4	
+     5	#include "Statistics.h"
+     6	
+     7	void Statistics::addEvent(const Event& event) {
+     8	
+     9	   if (event.getType() == EventType::ARRIVAL) {
+    10	#ifdef TESTING
+    11	      std::cout << "Processing arrival event "
+    12	                << event.getNumber()
+    13	                << " in queue "
+    14	                << event.getLine()
+    15	                << " at time "
+    16	                << event.getTime()
+    17	                << std::endl;
+    18	#endif
+    19	
+    20	#ifndef TESTING
+    21	      std::cout << ".";
+    22	
+    23	      if (event.getNumber() % 72 == 0)
+    24	         std::cout << std::endl;
+    25	#endif
+    26	
+    27	      ++countTotal;
+    28	
+    29	      if (event.getLine() == 1) {
+    30	         arrivalEvents1.enqueue(event);
+    31	         ++count1;
+    32	      }
+    33	      else if (event.getLine() == 2) {
+    34	         arrivalEvents2.enqueue(event);
+    35	         ++count2;
+    36	      }
+    37	      else {
+    38	         arrivalEvents3.enqueue(event);
+    39	         ++count3;
+    40	      }
+    41	   }
+    42	
+    43	   // Use departures to calculate total wait time and cumulative wait
+    44	   // time for each line.
+    45	   else {
+    46	#ifdef TESTING
+    47	      std::cout << "Processing departure event "
+    48	                << event.getNumber()
+    49	                << " at time: "
+    50	                << event.getTime()
+    51	                << " in line number "
+    52	                << event.getLine();
+    53	#endif
+    54	      Event arrivalEvent;
+    55	      bool eventWaiting(false);
+    56	
+    57	      if (event.getLine() == 1 && !arrivalEvents1.isEmpty() ) {
+    58	         arrivalEvent = arrivalEvents1.peekFront();
+    59	         arrivalEvents1.dequeue();
+    60	         waitTime1 += event.getTime() -
+    61	            (arrivalEvent.getTime() + arrivalEvent.getDuration() );
+    62	         eventWaiting = true;
+    63	      }
+    64	      else if (event.getLine() == 2 && !arrivalEvents2.isEmpty() ) {
+    65	         arrivalEvent = arrivalEvents2.peekFront();
+    66	         arrivalEvents2.dequeue();
+    67	         waitTime2 += event.getTime() -
+    68	            (arrivalEvent.getTime() + arrivalEvent.getDuration() );
+    69	         eventWaiting = true;
+    70	      }
+    71	      else if (event.getLine() == 3 && !arrivalEvents3.isEmpty() ) {
+    72	         arrivalEvent = arrivalEvents3.peekFront();
+    73	         arrivalEvents3.dequeue();
+    74	         waitTime3 += event.getTime() -
+    75	            (arrivalEvent.getTime() + arrivalEvent.getDuration() );
+    76	         eventWaiting = true;
+    77	      }
+    78	
+    79	      if (eventWaiting) {
+    80	#ifdef TESTING
+    81	         std::cout << " event "
+    82	                   << arrivalEvent.getNumber()
+    83	                   << " waited: "
+    84	                   << event.getTime() -
+    85	            (arrivalEvent.getTime() + arrivalEvent.getDuration() );
+    86	#endif
+    87	         waitTimeTotal += event.getTime() -
+    88	            (arrivalEvent.getTime() + arrivalEvent.getDuration() );
+    89	      }
+    90	#ifdef TESTING
+    91	      else {
+    92	         std::cout << " no events waiting.";
+    93	      }
+    94	      std::cout << std::endl;
+    95	#endif
+    96	   }
+    97	}
+    98	
+    99	void Statistics::reportStats() const {
+   100	
+   101	   std::cout << "Final Statistics:"
+   102	             << std::endl;
+   103	
+   104	   std::cout << "\tTotal number of people processed: "
+   105	             << countTotal
+   106	             << std::endl;
+   107	
+   108	   std::cout << "\tTotal wait time: "
+   109	             << waitTimeTotal
+   110	             << std::endl;
+   111	
+   112	   std::cout << "\tAverage amount of time spent waiting: ";
+   113	   if (countTotal != 0) {
+   114	      std::cout << (double)waitTimeTotal / (double)countTotal;
+   115	   }
+   116	   else {
+   117	      std::cout << 0.0;
+   118	   }
+   119	   std::cout << std::endl;
+   120	
+   121	   std::cout << "\n\tTotals for Teller 1:"
+   122	             << std::endl;
+   123	
+   124	   std::cout << "\t\tPeople processed: "
+   125	             << count1
+   126	             << std::endl;
+   127	
+   128	   std::cout << "\t\tWait time: "
+   129	             << waitTime1
+   130	             << std::endl;
+   131	
+   132	   std::cout << "\t\tAverage wait time: ";
+   133	   if (count1 != 0) {
+   134	      std::cout << (double)waitTime1 / (double)count1;
+   135	   }
+   136	   else {
+   137	      std::cout << 0.0;
+   138	   }
+   139	   std::cout << std::endl;
+   140	
+   141	   std::cout << "\n\tTotals for Teller 2:"
+   142	             << std::endl;
+   143	
+   144	   std::cout << "\t\tPeople processed: "
+   145	             << count2
+   146	             << std::endl;
+   147	
+   148	   std::cout << "\t\tWait time: "
+   149	             << waitTime2
+   150	             << std::endl;
+   151	
+   152	   std::cout << "\t\tAverage wait time: ";
+   153	   if (count2 != 0) {
+   154	      std::cout << (double)waitTime2 / (double)count2;
+   155	   }
+   156	   else {
+   157	      std::cout << 0.0;
+   158	   }
+   159	   std::cout << std::endl;
+   160	
+   161	   std::cout << "\n\tTotals for Teller 3:"
+   162	             << std::endl;
+   163	
+   164	   std::cout << "\t\tPeople processed: "
+   165	           << count3
+   166	           << std::endl;
+   167	
+   168	   std::cout << "\t\tWait time: "
+   169	             << waitTime3
+   170	             << std::endl;
+   171	
+   172	   std::cout << "\t\tAverage wait time: ";
+   173	   if (count3 != 0) {
+   174	      std::cout << (double)waitTime3 / (double)count3;
+   175	   }
+   176	   else {
+   177	      std::cout << 0.0;
+   178	   }
+   179	   std::cout << std::endl;
+   180	}
+7% cat -n Statistics.cpp[K[K[K[K[K[K[K[K[K[K[K[K[K[KSimu
+Simulation.cpp  Simulation.h    
+7% cat -n Simulation.h
+     1	// My ID: 5727889
+     2	// This file is part of the threeTeller version
+     3	#ifndef SIMULATION_
+     4	#define SIMULATION_
+     5	
+     6	#include "../Event.h"
+     7	#include "EventBuilder.h"
+     8	#include "../LinkedQueue.h"
+     9	#include "../PriorityQueue.h"
+    10	#include "Statistics.h"
+    11	
+    12	class Simulation {
+    13	private:
+    14	   Event currentEvent;
+    15	   EventBuilder eventBuilder;
+    16	   LinkedQueue<Event> line1;
+    17	   LinkedQueue<Event> line2;
+    18	   LinkedQueue<Event> line3;
+    19	   PriorityQueue<Event> events;
+    20	   Statistics stats;
+    21	
+    22	   void processArrival();
+    23	   void processDeparture();
+    24	
+    25	   /** Get the linked queue of events associated with 'lineNumber'.
+    26	       @pre 'lineNumber' is either 1, 2, or 3. 
+    27	       @post None. 
+    28	      
+    29	       @param lineNumber The line's number to retrieve.
+    30	       @return A linked queue of events associated with 'lineNumber'. */
+    31	   LinkedQueue<Event>& getLine(int lineNumber);
+    32	
+    33	public:
+    34	   Simulation();
+    35	   virtual ~Simulation() = default;
+    36	
+    37	   void simulate();
+    38	};
+    39	
+    40	#endif
+8% cat -n Simulation.h[Kcpp
+     1	// My ID: 5727889
+     2	// This file is part of the threeTeller version
+     3	#include <iostream>
+     4	
+     5	#include "Simulation.h"
+     6	#include "../Time.h"
+     7	#include "../EventType.h"
+     8	
+     9	Simulation::Simulation() {
+    10	  std::cout << "Simulation of 3 Queue Begins" << std::endl;
+    11	}
+    12	
+    13	LinkedQueue<Event>& Simulation::getLine(int lineNumber) {
+    14	  switch (lineNumber) {
+    15	  case 1:
+    16	    return line1;
+    17	  case 2:
+    18	    return line2;
+    19	  case 3:
+    20	    return line3;
+    21	  default:
+    22	    return line1;
+    23	  }
+    24	}
+    25	
+    26	void Simulation::processArrival() {
+    27	
+    28	  // Determine the smallest line to queue the next arrival in
+    29	  int lineToQueue;
+    30	  if (line1.getLength() <= line2.getLength() && line1.getLength() <= line3.getLength() ) {
+    31	    // Line 1 is the shortest
+    32	    lineToQueue = 1;
+    33	  } else if (line2.getLength() <= line1.getLength() && line2.getLength() <= line3.getLength() ) {
+    34	    // Line 2 is the shortest
+    35	    lineToQueue = 2;
+    36	  } else {
+    37	    // Line 3 is the shortest
+    38	    lineToQueue = 3;
+    39	  }
+    40	
+    41	  // Set the line this event is in to the smallest line found
+    42	  currentEvent.setLine(lineToQueue);
+    43	
+    44	  // Alias to the smallest line
+    45	  LinkedQueue<Event> &line = getLine(lineToQueue);
+    46	  
+    47	  // Line empty?
+    48	  bool lineIsEmpty(line.isEmpty());
+    49	  
+    50	  // Add event to the line
+    51	  line.enqueue(currentEvent);
+    52	
+    53	  // Dequeue from the event list
+    54	  events.dequeue();
+    55	
+    56	  // Add a departure event to the event list if the line was empty
+    57	  if (lineIsEmpty) {    
+    58	    Event departure(eventBuilder.createDepartureEvent(currentEvent.getTime(),
+    59							      currentEvent.getDuration(),
+    60							      currentEvent.getNumber(),
+    61							      currentEvent.getLine()
+    62							      ));
+    63	    
+    64	    events.enqueue(departure);
+    65	  }
+    66	  
+    67	  // Add next arrival to events queue
+    68	  Event nextArrival = eventBuilder.createArrivalEvent(currentEvent.getNumber() + 1);
+    69	
+    70	  // If the event is valid, meaning input stream hasn't reached end of file then add it to events
+    71	  if (nextArrival.getType() != EventType::NONE) {
+    72	    events.enqueue(nextArrival);
+    73	  }
+    74	}
+    75	
+    76	void Simulation::processDeparture() {
+    77	
+    78	  LinkedQueue<Event> &line = getLine(currentEvent.getLine() );
+    79	  
+    80	  // Remove customer from front of line
+    81	  line.dequeue();
+    82	
+    83	  // Remove this departure event from front of events queue
+    84	  events.dequeue();
+    85	
+    86	  // If the line isn't empty, enqueue a departure event for the customer at front of line.
+    87	  if (!line.isEmpty()) {
+    88	    Event front(line.peekFront());
+    89	    
+    90	    events.enqueue(eventBuilder.createDepartureEvent(currentEvent.getTime(),
+    91							     front.getDuration(),
+    92							     front.getNumber(),
+    93							     front.getLine()
+    94							     ));
+    95	  }
+    96	}
+    97	
+    98	void Simulation::simulate() {
+    99	
+   100	  // Event number 1, line number 1
+   101	  Event firstEvent = eventBuilder.createArrivalEvent(1);
+   102	  
+   103	  if (firstEvent.getType() != EventType::NONE) {
+   104	    events.enqueue(firstEvent);
+   105	  }
+   106	      
+   107	  while(!events.isEmpty()) {
+   108	    
+   109	    // Next event
+   110	    currentEvent = events.peekFront();
+   111	
+   112	    if (currentEvent.getType() == EventType::ARRIVAL) {
+   113	
+   114	      processArrival();
+   115	    } else { // The event is a departure event
+   116	
+   117	      processDeparture();
+   118	    }
+   119	
+   120	    // Add to statistics
+   121	    stats.addEvent(currentEvent);
+   122	  }
+   123	
+   124	#ifndef TESTING
+   125	  std::cout << std::endl;
+   126	#endif
+   127	
+   128	  std::cout << "Simulation Ends\n" << std::endl;
+   129	
+   130	  // Report statistics
+   131	  stats.reportStats();
+   132	}
+9% cat -n Simulation.cpp[K[K[K[K[K[K[K[K[K[K[K[K[K[KEvent
+EventBuilder.cpp  EventBuilder.h    
+9% cat -n EventBuilder.h
+     1	// My ID: 5727889
+     2	// This file is part of the threeTeller version
+     3	#ifndef EVENT_BUILDER_
+     4	#define EVENT_BUILDER_
+     5	
+     6	#include <fstream>
+     7	
+     8	#include "../Event.h"
+     9	
+    10	class EventBuilder {
+    11	private:
+    12	   std::ifstream inputFile;
+    13	
+    14	public:
+    15	   /** Three things must happen to create an EventBuilder:
+    16	    *  1) Prompt the user for the name of an input file
+    17	    *  2) Attempt to open this file on the 'inputFile' data member
+    18	    *  3) If the file doesn't open, repeat steps 1 and 2 */
+    19	   EventBuilder();
+    20	
+    21	   /** Create and return an event with members:
+    22	    *  type == EventType::ARRIVAL
+    23	    *  number == input argument 'number'
+    24	    *  line == input argument 'lineNumber'
+    25	    *  time == time read from 'inputFile'
+    26	    *  duration == transaction length read from 'inputFile'
+    27	    *
+    28	    *  If 'inputFile' has been completely read (EOF has been reached),
+    29	    *  then set the return event.type field to EventType::NONE.  This
+    30	    *  can then be used to tell when the external file is either empty
+    31	    *  or EOF has been reached. */
+    32	  Event createArrivalEvent(int number);
+    33	
+    34	  /** Create and return an event with members:
+    35	    *  type == EventType::DEPATURE
+    36	    *  number == input argument 'number'
+    37	    *  line == input argument 'lineNumber'
+    38	    *  time == 'currentEventTime' + 'transactionLength' */
+    39	   Event createDepartureEvent(const Time& currentEventTime,
+    40	                              const Time& transactionLength,
+    41	                              int number,
+    42	                              int lineNumber);
+    43	};
+    44	
+    45	#endif
+10% cat -n EventBuilder.h[Kcpp
+     1	// My ID: 5727889
+     2	// This file is part of the threeTeller version
+     3	#include <iostream>
+     4	
+     5	#include "EventBuilder.h"
+     6	#include "../Time.h"
+     7	#include "../EventType.h"
+     8	
+     9	EventBuilder::EventBuilder() {
+    10	  while(true) {
+    11	    std::cout << "Input file name: ";
+    12	
+    13	    std::string fileName;
+    14	    std::cin >> fileName;
+    15	
+    16	    inputFile.open(fileName);
+    17	
+    18	    // If cannot open, continue loop at start and try again
+    19	    if (!inputFile) {
+    20	      std::cout << "Could not open file '" << fileName << "'. Please try again." << std::endl;
+    21	      continue;
+    22	    }
+    23	
+    24	    // If properly opened, add a linebreak and exit loop; construction is complete
+    25	    std::cout << std::endl;
+    26	    break;
+    27	  }
+    28	}
+    29	
+    30	Event EventBuilder::createArrivalEvent(int number) {
+    31	  Event event;
+    32	  Time time;
+    33	  Time duration;
+    34	  
+    35	  inputFile >> time;
+    36	  inputFile >> duration;
+    37	
+    38	  // Set the event's line to arbitrary; it will be set elsewhere
+    39	  event.setLine(-1);
+    40	
+    41	  // If the input file stream is good, attribute inputs to the event
+    42	  if (inputFile.good()) {
+    43	    event.setType(EventType::ARRIVAL);
+    44	    event.setTime(time);
+    45	    event.setDuration(duration);
+    46	    event.setNumber(number);
+    47	  }
+    48	
+    49	  return event;
+    50	}
+    51	
+    52	Event EventBuilder::createDepartureEvent(const Time& currentEventTime, const Time& transactionLength, int number, int line) {
+    53	  Event departure(EventType::DEPARTURE, currentEventTime + transactionLength, 0, number, line);
+    54	  return departure;
+    55	}
+11% cat -n EventBuilder.cpp[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K../Event.h
+     1	// My ID: 5727889
+     2	// Master file, included in both oneTeller and threeTeller varieties
+     3	#ifndef EVENT_
+     4	#define EVENT_
+     5	
+     6	#include "EventType.h"
+     7	#include "Time.h"
+     8	
+     9	class Event {
+    10	private:
+    11	
+    12	  EventType type;
+    13	  Time time;
+    14	  Time duration;
+    15	  int number;
+    16	  int line;
+    17	  
+    18	public:
+    19	
+    20	  /** Ctor with preset arguments */
+    21	  Event(EventType type = EventType::NONE, Time time = 0, Time duration = 0, int number = 0, int line = 1);
+    22	
+    23	  /** Virtual (default) dtor */
+    24	  virtual ~Event() = default;
+    25	
+    26	  /** Comparison operator overloads */
+    27	  bool operator<(const Event& rhs) const {
+    28	    return time < rhs.time;
+    29	  }
+    30	
+    31	  bool operator>(const Event& rhs) const {
+    32	    return time > rhs.time;
+    33	  }
+    34	
+    35	  bool operator==(const Event& rhs) const {
+    36	    return time == rhs.time;
+    37	  }
+    38	
+    39	  /** Comparison operator overloads defined in terms of the previous three overloads */
+    40	  bool operator<=(const Event& rhs) const {
+    41	    return *this < rhs || *this == rhs;
+    42	  }
+    43	
+    44	  bool operator>=(const Event& rhs) const {
+    45	    return *this > rhs || *this == rhs;
+    46	  }
+    47	
+    48	  bool operator!=(const Event& rhs) const {
+    49	    return !(*this == rhs);
+    50	  }
+    51	
+    52	  /** Accessor and mutator for 'type' */
+    53	  virtual EventType getType() const;
+    54	
+    55	  virtual void setType(EventType newType);
+    56	
+    57	  /** Accessor and mutator for 'time' */
+    58	  virtual Time getTime() const;
+    59	
+    60	  virtual void setTime(Time newTime);
+    61	
+    62	  /** Accessor and mutator for 'duration' */
+    63	  virtual Time getDuration() const;
+    64	
+    65	  virtual void setDuration(Time newDuration);
+    66	
+    67	  /** Accessor and mutator for 'number' */
+    68	  virtual int getNumber() const;
+    69	
+    70	  virtual void setNumber(int newNumber);
+    71	
+    72	  /** Accessor and mutator for 'line' */
+    73	  virtual int getLine() const;
+    74	
+    75	  virtual void setLine(int newLine);
+    76	};
+    77	
+    78	#endif // EVENT_
+12% cat -n ../Event.h[Kcpp
+     1	// My ID: 5727889
+     2	// Master file, included in both oneTeller and threeTeller varieties
+     3	#include "Event.h"
+     4	
+     5	Event::Event(EventType type, Time time, Time duration, int number, int line) {
+     6	  this->type = type;
+     7	  this->time = time;
+     8	  this->duration = duration;
+     9	  this->number = number;
+    10	  this->line = line;
+    11	}
+    12	
+    13	EventType Event::getType() const {
+    14	  return type;
+    15	}
+    16	
+    17	void Event::setType(EventType newType) {
+    18	  type = newType;
+    19	}
+    20	
+    21	Time Event::getTime() const {
+    22	  return time;
+    23	}
+    24	
+    25	void Event::setTime(Time newTime) {
+    26	  time = newTime;
+    27	}
+    28	
+    29	Time Event::getDuration() const {
+    30	  return duration;
+    31	}
+    32	
+    33	void Event::setDuration(Time newDuration) {
+    34	  duration = newDuration;
+    35	}
+    36	
+    37	int Event::getNumber() const {
+    38	  return number;
+    39	}
+    40	
+    41	void Event::setNumber(int newNumber) {
+    42	  number = newNumber;
+    43	}
+    44	
+    45	int Event::getLine() const {
+    46	  return line;
+    47	}
+    48	
+    49	void Event::setLine(int newLine) {
+    50	  line = newLine;
+    51	}
+13% cat -n ../Event.cpp[K[K[K[KType.h
+     1	// My ID: 5727889
+     2	// Master file, included in both oneTeller and threeTeller varieties
+     3	#ifndef EVENT_TYPE_
+     4	#define EVENT_TYPE_
+     5	
+     6	enum class EventType {
+     7			      NONE,
+     8			      ARRIVAL,
+     9			      DEPARTURE
+    10	};
+    11	
+    12	#endif // EVENT_TYPE
+14% cat -n ../EventType.h[K[K[K[K[K[K[K[K[K[K[KTime.h
+     1	// My ID: 5727889
+     2	// Master file, included in both oneTeller and threeTeller varieties
+     3	#ifndef TIME_ALIAS_
+     4	#define TIME_ALIAS_
+     5	
+     6	using Time = unsigned int;
+     7	
+     8	#endif // TIME_ALIAS_
+15% cat -n ../Time.h[K[K[K[K[K[K[K[K[K[K[K[K[K[Kls ../
+build		EventType.h	      LinkedSortedList.h  PrecondViolatedExcep.cpp  PriorityQueueInterface.h  Time.h
+CMakeLists.txt	LinkedQueue.cpp       Node.cpp		  PrecondViolatedExcep.h    QueueInterface.h
+Event.cpp	LinkedQueue.h	      Node.h		  PriorityQueue.cpp	    SortedListInterface.h
+Event.h		LinkedSortedList.cpp  oneTeller		  PriorityQueue.h	    threeTeller
+16% git --no-pager log --no-color
+commit 8175f18bafa32d7a763eecb88b4c6aecea365478 (HEAD -> master)
+Author: Reece Holmdahl <rholmdahl@gmail.com>
+Date:   Tue Apr 6 15:56:20 2021 -0500
+
+    Got rid of debug messages. Finished formatting. Changed one thing in LinkedSortedList: in getNodeBefore, replace < with <= because that is the opposite of >. Tests now respond identically to the ones in readmes.
+
+commit c05ffc1dc1e39c6876aba9533e15b1182fbe2f03
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 15:49:31 2021 -0500
+
+    Got ordering working correctly as dictated by examples on project page. Working on formatting then will submit
+
+commit fae8591d53d2d22274ee191309274eda3b72497c
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 15:17:05 2021 -0500
+
+    Almost everything in three teller version working correctly. Working on trying to get the order correct with the examples, checking to see if my length addition is working correctly.
+
+commit 1eb7e3ef8ee93e3a34300423f006bf39bf7b867f
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 14:39:19 2021 -0500
+
+    Working on line number abstraction by using aliases and a private utility method to convert an int (1, 2, or 3) to a reference to the respective linked queue of events.
+
+commit 3c870f6130d82468e71a84a3deeb5b9fccee9955
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 14:17:47 2021 -0500
+
+    Copied oneTeller version of EventBuilder and Simulation to threeTeller to make adjustments. Also implemented getLength and the proper back end modifications to make it work for the line length acquisition.
+
+commit a1935cbaf5a0088ba1ab1490d340371ce6b328fd
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 14:09:55 2021 -0500
+
+    Made Event compatible with three teller version
+
+commit 759ccb946243e91fd1cd51bd79cb5260604a5d4f
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 14:05:01 2021 -0500
+
+    Happy with formatting of output for oneTeller, moving to threeTeller
+
+commit 56c9714b43c18a637e4268df96a689170560d025
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 14:02:18 2021 -0500
+
+    Added linked queue for the simulation class. Got preliminary implementation of oneTeller version working correctly, briefly focusing on formatting before moving to threeTeller version
+
+commit c3d4311d2ac787ee9652d1a849333431370f2602
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 11:21:38 2021 -0500
+
+    Added operator overloads to event.h
+
+commit 01f9b0036a1f0c5db5ce765551374392278c8178
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 10:24:06 2021 -0500
+
+    gitignore
+
+commit f583a6259db290227e717dbd91caab901db096a0
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 10:23:35 2021 -0500
+
+    WIP version of CMakeLists.txt, and 'finished' versions of Event, EventType, and Time
+
+commit acc2036f27d19aac4e83acee46394f1e52dc3959
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 09:44:48 2021 -0500
+
+    Added moooore base files for ADTs used behind the scenes in this project. Using smart pointer version of Node as linked sorted list does not call explicit delete.
+
+commit 1c19d086395378644fa7adf24c6800df57621143
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 09:37:20 2021 -0500
+
+    Made more base files. Opting for the unchanged files per version (Event, EventType, and Time) to go in the parent directory
+
+commit 5b03c0d94155e5f100b518a1b0a21fce3010a64c
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Apr 6 09:35:11 2021 -0500
+
+    Added base files from ~sholtz/.../project6
+17% cd ../build/
+18% ls
+CMakeCache.txt	CMakeFiles  cmake_install.cmake  Makefile
+19% make
+[  7%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/oneTeller/project6.cpp.o[0m
+[ 14%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/Event.cpp.o[0m
+[ 21%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/PrecondViolatedExcep.cpp.o[0m
+[ 28%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/oneTeller/EventBuilder.cpp.o[0m
+[ 35%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/oneTeller/Statistics.cpp.o[0m
+[ 42%] [32mBuilding CXX object CMakeFiles/oneTeller.dir/oneTeller/Simulation.cpp.o[0m
+[ 50%] [32m[1mLinking CXX executable oneTeller[0m
+[ 50%] Built target oneTeller
+[ 57%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/threeTeller/project6.cpp.o[0m
+[ 64%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/Event.cpp.o[0m
+[ 71%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/PrecondViolatedExcep.cpp.o[0m
+[ 78%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/threeTeller/EventBuilder.cpp.o[0m
+[ 85%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/threeTeller/Statistics.cpp.o[0m
+[ 92%] [32mBuilding CXX object CMakeFiles/threeTeller.dir/threeTeller/Simulation.cpp.o[0m
+[100%] [32m[1mLinking CXX executable threeTeller[0m
+[100%] Built target threeTeller
+20% ./tr[K[K[K[K../threeTeller/inpu[K[K[K[K[K[K.[K/
+../threeTelle/ not found
+
+[K20% ../threeTelle/
+../threeTelle/ not found
+
+[K20% ../threeTelle/[Kr/in[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[Kls ../threet[KTeller/
+EventBuilder.cpp  input0.dat  input2.dat  input4.dat  input6.dat  project6.cpp	Simulation.cpp	Statistics.cpp	typescript.txt
+EventBuilder.h	  input1.dat  input3.dat  input5.dat  input7.dat  README	Simulation.h	Statistics.h
+21% ../threeTeller/input0.dat[K[K[5G.[P[P[P[P[P[Pe[P[P[P[Pl[P[P[P[P[P[P[P[P[P0.d[K.d[Kd[K[K./threT[KeTeller 
+Input file name: ../threeTeller/input0.dat
+
+Simulation of 3 Queue Begins
+....
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 4
+	Total wait time: 5
+	Average amount of time spent waiting: 1.25
+
+	Totals for Teller 1:
+		People processed: 2
+		Wait time: 5
+		Average wait time: 2.5
+
+	Totals for Teller 2:
+		People processed: 1
+		Wait time: 0
+		Average wait time: 0
+
+	Totals for Teller 3:
+		People processed: 1
+		Wait time: 0
+		Average wait time: 0
+22% ./threeTeller
+Input file name: ../threeTeller/input0.dat     1.dat
+
+Simulation of 3 Queue Begins
+
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 0
+	Total wait time: 0
+	Average amount of time spent waiting: 0
+
+	Totals for Teller 1:
+		People processed: 0
+		Wait time: 0
+		Average wait time: 0
+
+	Totals for Teller 2:
+		People processed: 0
+		Wait time: 0
+		Average wait time: 0
+
+	Totals for Teller 3:
+		People processed: 0
+		Wait time: 0
+		Average wait time: 0
+23% ./threeTeller
+Input file name: ../threeTeller/input0.dat     2.dat
+
+Simulation of 3 Queue Begins
+....
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 4
+	Total wait time: 0
+	Average amount of time spent waiting: 0
+
+	Totals for Teller 1:
+		People processed: 4
+		Wait time: 0
+		Average wait time: 0
+
+	Totals for Teller 2:
+		People processed: 0
+		Wait time: 0
+		Average wait time: 0
+
+	Totals for Teller 3:
+		People processed: 0
+		Wait time: 0
+		Average wait time: 0
+24% ./threeTeller
+Input file name: ../threeTeller/input0.dat     3.dat
+
+Simulation of 3 Queue Begins
+.....
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 5
+	Total wait time: 0
+	Average amount of time spent waiting: 0
+
+	Totals for Teller 1:
+		People processed: 2
+		Wait time: 0
+		Average wait time: 0
+
+	Totals for Teller 2:
+		People processed: 2
+		Wait time: 0
+		Average wait time: 0
+
+	Totals for Teller 3:
+		People processed: 1
+		Wait time: 0
+		Average wait time: 0
+25% ./threeTeller
+Input file name: ../threeTeller/input0.dat     4.dat
+
+Simulation of 3 Queue Begins
+..........
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 10
+	Total wait time: 0
+	Average amount of time spent waiting: 0
+
+	Totals for Teller 1:
+		People processed: 4
+		Wait time: 0
+		Average wait time: 0
+
+	Totals for Teller 2:
+		People processed: 3
+		Wait time: 0
+		Average wait time: 0
+
+	Totals for Teller 3:
+		People processed: 3
+		Wait time: 0
+		Average wait time: 0
+26% ./threeTeller
+Input file name: ../threeTeller/input0.dat     5.dat
+
+Simulation of 3 Queue Begins
+........................................................................
+........................................................................
+......
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 150
+	Total wait time: 21
+	Average amount of time spent waiting: 0.14
+
+	Totals for Teller 1:
+		People processed: 79
+		Wait time: 16
+		Average wait time: 0.202532
+
+	Totals for Teller 2:
+		People processed: 49
+		Wait time: 5
+		Average wait time: 0.102041
+
+	Totals for Teller 3:
+		People processed: 22
+		Wait time: 0
+		Average wait time: 0
+27% ./threeTeller
+Input file name: ../threeTeller/input0.dat     6.dat
+
+Simulation of 3 Queue Begins
+........................................................................
+........................................................................
+........................................................................
+........................................................................
+............
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 300
+	Total wait time: 96
+	Average amount of time spent waiting: 0.32
+
+	Totals for Teller 1:
+		People processed: 136
+		Wait time: 62
+		Average wait time: 0.455882
+
+	Totals for Teller 2:
+		People processed: 99
+		Wait time: 28
+		Average wait time: 0.282828
+
+	Totals for Teller 3:
+		People processed: 65
+		Wait time: 6
+		Average wait time: 0.0923077
+28% ./threeTeller
+Input file name: ../threeTeller/input0.dat     7.dat
+
+Simulation of 3 Queue Begins
+........................................................................
+........................................................................
+........................................................................
+........................................................................
+........................................................................
+........................................................................
+....................................................................
+Simulation Ends
+
+Final Statistics:
+	Total number of people processed: 500
+	Total wait time: 119
+	Average amount of time spent waiting: 0.238
+
+	Totals for Teller 1:
+		People processed: 239
+		Wait time: 80
+		Average wait time: 0.334728
+
+	Totals for Teller 2:
+		People processed: 159
+		Wait time: 30
+		Average wait time: 0.188679
+
+	Totals for Teller 3:
+		People processed: 102
+		Wait time: 9
+		Average wait time: 0.0882353
+29% exit
+exit
+
+Script done on 2021-04-06 16:10:26-0500

@@ -1,0 +1,906 @@
+Script started on 2021-02-23 16:18:29-0600
+1% pwd
+/home/csugrads/holmd353/projects/project3
+2% ls -l
+total 52
+drwxr-xr-x 3 holmd353 student 4096 Feb 23 16:18 build
+-rw------- 1 holmd353 student  353 Feb 23 16:16 CMakeLists.txt
+-rw------- 1 holmd353 student 4253 Feb 23 16:16 lab3driver.cpp
+-rwx------ 1 holmd353 student 3885 Feb 23 16:16 LinkedSet.cpp
+-rwx------ 1 holmd353 student 2321 Feb 23 16:16 LinkedSet.h
+-rw------- 1 holmd353 student 5372 Feb 23 16:16 main.cpp
+-rwx------ 1 holmd353 student  914 Feb 23 16:16 Node.cpp
+-rwx------ 1 holmd353 student  789 Feb 23 16:16 Node.h
+-rwx------ 1 holmd353 student   74 Feb 23 16:16 qrun
+-rwx------ 1 holmd353 student 2685 Feb 23 16:16 SetInterface.h
+drwxr-xr-x 2 holmd353 student 4096 Feb 23 16:16 test-files
+-rw------- 1 holmd353 student    0 Feb 23 16:18 typescript.txt
+3% cat -n CMakeLists.txt 
+     1	cmake_minimum_required(VERSION 3.10)
+     2	
+     3	project("Project 3"
+     4	  VERSION 0.0.0
+     5	  DESCRIPTION "Project 3: Linked Set and Spell Checking"
+     6	  LANGUAGES CXX)
+     7	
+     8	add_compile_options(-Wall -Wextra -Wpedantic)
+     9	
+    10	set(CXX_STANDARD 14)
+    11	set(CXX_STANDARD_REQUIRED ON)
+    12	set(CXX_EXTENSIONS OFF)
+    13	
+    14	add_executable(main_test
+    15	  main.cpp)
+    16	
+    17	add_executable(lab3_test
+    18	  lab3driver.cpp)
+4% cat -n main.cpp 
+     1	#include <iostream>
+     2	#include <fstream>
+     3	
+     4	#include "LinkedSet.h"
+     5	
+     6	using std::cout;
+     7	using std::cin;
+     8	using std::endl;
+     9	using std::string;
+    10	
+    11	/** Cleans all of the extraneous characters from both the beginning and the end of a string.
+    12	    @pre None.
+    13	    @post None.
+    14	
+    15	    @param[in] dirty The uncleaned string.
+    16	
+    17	    @return The cleaned up version of 'dirty'. */
+    18	string clean(const string& dirty);
+    19	
+    20	/** Makes all of the characters in the string lower case.
+    21	    @pre None.
+    22	    @post None.
+    23	
+    24	    @param[in] cased The string which could contain letters of any case.
+    25	
+    26	    @return A new copy of 'cased' in all lower case. */
+    27	string toLower(const string& cased);
+    28	
+    29	int main() {
+    30	
+    31	  std::ifstream inFile;
+    32	
+    33	  cout << "Enter the name of a dictionary file: ";
+    34	
+    35	  string dictFile;
+    36	  cin >> dictFile;
+    37	
+    38	  inFile.open(dictFile);
+    39	
+    40	  // Once this while loop exits, the file was successfully opened
+    41	  while (!inFile) {
+    42	    cout << "Could not find the file \"" << dictFile << "\"." << endl;
+    43	    
+    44	    cout << "Try again, and enter the name of another dictionary file (or \"exit\" to quit): ";
+    45	    
+    46	    cin >> dictFile;
+    47	
+    48	    // Loop control: if user enters "exit", then exit program
+    49	    if (toLower(dictFile) == "exit") {
+    50	      return EXIT_SUCCESS;
+    51	    }
+    52	
+    53	    inFile.open(dictFile);
+    54	  }
+    55	
+    56	  cout << endl;
+    57	
+    58	  // Variables for the dictionary read
+    59	  LinkedSet<string> dictionary;
+    60	  string input;
+    61	
+    62	  // Read each individual word from the dictionary in a loop
+    63	  while (true) {
+    64	    
+    65	    inFile >> input;
+    66	
+    67	    // If the EOF character was found, break
+    68	    if (inFile.eof() ) {
+    69	      break;
+    70	    }
+    71	
+    72	    // Since a dictionary is already cleaned and in lower case, just add the input
+    73	    dictionary.add(input);
+    74	  }
+    75	
+    76	  // Close the dictionary file and prepare to spell check other files
+    77	  inFile.close();
+    78	
+    79	  // Variables for other files to be spell checked
+    80	  string fileName;
+    81	  LinkedSet<string> toBeSpellChecked;
+    82	
+    83	  // Main user loop: prompts user to enter a file name to spell check, then spell checks and repeats until prompted to exit
+    84	  while (true) {
+    85	    cout << "Enter the name of a file to spell check (or \"exit\" to quit): ";
+    86	    cin >> fileName;
+    87	
+    88	    // Loop control: if user enters "exit", then exit program
+    89	    if (toLower(fileName) == "exit") {
+    90	      return EXIT_SUCCESS;
+    91	    }
+    92	
+    93	    inFile.open(fileName);
+    94	
+    95	    // If the file couldn't be opened, let the user know and return to loop. Otherwise, spell check
+    96	    if (!inFile) {
+    97	      cout << "Could not open the file \"" << fileName << "\", try again." << endl;
+    98	    } else {
+    99	
+   100	      // Clear the set of words to be spell checked
+   101	      toBeSpellChecked.clear();
+   102	
+   103	      // Read in files from the file to be spell checked
+   104	      string input;
+   105	      while (true) {
+   106		inFile >> input;
+   107	
+   108		// If the EOF character was found, break
+   109		if (inFile.eof() ) {
+   110		  break;
+   111		}
+   112	
+   113		// Clean and lower the case of the word read from inFile
+   114		input = clean(toLower(input) );
+   115	
+   116		// Add the cleaned and lowered input to the to be spell checked set
+   117		toBeSpellChecked.add(input);
+   118	      }
+   119	
+   120	      // Take the difference from the set of words to be spell checked to the dictionary, yielding all of the incorrectly spelled words
+   121	      LinkedSet<string> misspelledWords = toBeSpellChecked.difference(dictionary);
+   122	
+   123	      // Output control for mispelled words: if empty, indicate so. Otherwise, list all of the misspelled words.
+   124	      if (misspelledWords.isEmpty() ) {
+   125		
+   126		cout << "There are no misspelled words in this document." << endl;
+   127	      } else {
+   128	
+   129		cout << "The misspelled words are as follows:" << endl;
+   130	
+   131		// Create a vector of all of the misspelled words from the set, and print out each of them.
+   132		std::vector<string> misspelled = misspelledWords.toVector();
+   133		for (unsigned int i(0); i < misspelled.size(); ++i) {
+   134		  if (i > 0) {
+   135		    cout << ", ";
+   136		  }
+   137		  cout << misspelled[i];
+   138		}
+   139		cout << endl;
+   140	      }
+   141	
+   142	      cout << endl;
+   143	    }
+   144	
+   145	    // After this file has been spell checked, close it in preparation for the next check or the end of the program.
+   146	    inFile.close();
+   147	  }
+   148	
+   149	  return EXIT_SUCCESS;
+   150	}
+   151	
+   152	/* Implementation of method headers shown above */
+   153	
+   154	string clean(const string& dirty) {
+   155	  // The characters to be removed from the beginning or end of the word
+   156	  string ext = "!@#$%^&*()_-+={}[]:;\"\'`<>,.?/|\\";
+   157	  
+   158	  string toClean(dirty);
+   159	  bool clean(false);
+   160	  
+   161	  while (!clean) {
+   162	    int first = toClean.find_first_of(ext);
+   163	    int last = toClean.find_last_of(ext);
+   164	    int lastIndex = toClean.length() - 1;
+   165	
+   166	    // Loop control for cleaning the string. It can either have an invalid character at the beginning, end, both, or neither
+   167	    if (first == 0 && last == lastIndex) {
+   168	
+   169	      // Remove the first and last character
+   170	      toClean = toClean.substr(1, lastIndex);
+   171	    } else if (first == 0) {
+   172	
+   173	      // Remove the first character
+   174	      toClean = toClean.substr(1);
+   175	    } else if (last == lastIndex) {
+   176	
+   177	      // Remove the last character
+   178	      toClean = toClean.substr(0, lastIndex);
+   179	    } else {
+   180	
+   181	      // No invalid characters, the string is clean
+   182	      clean = true;
+   183	    }
+   184	  }
+   185	  
+   186	  return toClean;
+   187	}
+   188	
+   189	string toLower(const string& cased) {
+   190	  int toLower = 'a' - 'A';
+   191	  string lower(cased);
+   192	
+   193	  // Iterate through the string and find any uppercase letters, if found, increment that character by the distance to lower case
+   194	  for (unsigned int i(0); i < lower.length(); ++i) {
+   195	    if (lower[i] >= 'A' && lower[i] <= 'Z') {
+   196	      lower[i] += toLower;
+   197	    }
+   198	  }
+   199	  
+   200	  return lower;
+   201	}
+5% cat -n main.cpp[K[K[K[K[K[K[K[Klab3driver.cpp 
+     1	// My ID#: 5727889
+     2	#include <iostream>
+     3	#include <vector>
+     4	
+     5	#include "LinkedSet.h"
+     6	
+     7	using std::cout;
+     8	using std::endl;
+     9	using std::string;
+    10	using std::vector;
+    11	
+    12	template <typename T>
+    13	void printSet(const SetInterface<T>& set) {
+    14	
+    15	  cout << "Printing set." << endl;
+    16	  
+    17	  const vector<T> v = set.toVector();
+    18	
+    19	  int size(v.size());
+    20	
+    21	  if (!size) {
+    22	    
+    23	    cout << "The set is empty." << endl;
+    24	  } else {
+    25	
+    26	    for (int index(0); index < size; ++index) {
+    27	      cout << "Element: " << v[index] << endl;
+    28	    }
+    29	  }
+    30	
+    31	  cout << endl;
+    32	}
+    33	
+    34	template <typename T>
+    35	void testAdd(SetInterface<T>& set, const T& addition, bool expectedResult) {
+    36	  cout << "Attempting to add " << addition
+    37	       << " to the set (should be " << expectedResult
+    38	       << "): " << set.add(addition) << endl;
+    39	}
+    40	
+    41	int main() {
+    42	
+    43	  LinkedSet<string> set1;
+    44	  LinkedSet<string> set2;
+    45	
+    46	  cout << "1: ArraySet doesn't allow duplicates:" << endl;
+    47	
+    48	  // Show results set1, set2, and their difference
+    49	  cout << "Set1:" << endl;
+    50	  printSet(set1);
+    51	
+    52	  testAdd(set1, string("hey!"), true);
+    53	  testAdd(set1, string("hello!"), true);
+    54	  testAdd(set1, string("hey!"), false);
+    55	
+    56	  cout << "\nSet1:" << endl;
+    57	  printSet(set1);
+    58	  set1.clear();
+    59	
+    60	  cout << "2: Both LHS and RHS are empty:" << endl;
+    61	  
+    62	  // Show results set1, set2, and their difference
+    63	  cout << "Set1:" << endl;
+    64	  printSet(set1);
+    65	  
+    66	  cout << "Set2:" << endl;
+    67	  printSet(set2);
+    68	
+    69	  cout << "Difference Set1 to Set2:" << endl;
+    70	  printSet(set1.difference(set2) );
+    71	
+    72	  cout << "3: LHS is empty, RHS has items:" << endl;
+    73	
+    74	  // Add some stuff to RHS
+    75	  set2.add("hello");
+    76	  set2.add("goodbye");
+    77	  set2.add("bonjour");
+    78	
+    79	  // Show results set1, set2, and their difference
+    80	  cout << "Set1:" << endl;
+    81	  printSet(set1);
+    82	
+    83	  cout << "Set2:" << endl;
+    84	  printSet(set2);
+    85	  
+    86	  cout << "Difference Set1 to Set2:" << endl;
+    87	  printSet(set1.difference(set2) );
+    88	
+    89	  cout << "4: RHS is empty, LHS has items:" << endl;
+    90	  
+    91	  // Clear RHS and add some stuff to LHS
+    92	  set2.clear();
+    93	  set1.add("twist");
+    94	  set1.add("fred");
+    95	  set1.add("johnny5");
+    96	
+    97	  // Show results set1, set2, and their difference
+    98	  cout << "Set1:" << endl;
+    99	  printSet(set1);
+   100	
+   101	  cout << "Set2:" << endl;
+   102	  printSet(set2);
+   103	  
+   104	  cout << "Difference Set1 to Set2:" << endl;
+   105	  printSet(set1.difference(set2) );
+   106	
+   107	  cout << "5: LHS and RHS have items without intersection:" << endl;
+   108	
+   109	  // LHS already has stuff, add some stuff not in LHS to RHS
+   110	  set2.add("hello");
+   111	  set2.add("goodbye");
+   112	  set2.add("bonjour");
+   113	
+   114	  // Show results set1, set2, and their difference
+   115	  cout << "Set1:" << endl;
+   116	  printSet(set1);
+   117	
+   118	  cout << "Set2:" << endl;
+   119	  printSet(set2);
+   120	  
+   121	  cout << "Difference Set1 to Set2:" << endl;
+   122	  printSet(set1.difference(set2) );
+   123	
+   124	  cout << "6: LHS and RHS have items with partial intersection:" << endl;
+   125	
+   126	  // Add something LHS has to RHS
+   127	  set2.add("twist");
+   128	
+   129	  // Show results set1, set2, and their difference
+   130	  cout << "Set1:" << endl;
+   131	  printSet(set1);
+   132	
+   133	  cout << "Set2:" << endl;
+   134	  printSet(set2);
+   135	  
+   136	  cout << "Difference Set1 to Set2:" << endl;
+   137	  printSet(set1.difference(set2) );
+   138	
+   139	  cout << "7: LHS and RHS have complete intersection:" << endl;
+   140	
+   141	  // Make LHS and RHS identical
+   142	  set1.clear();
+   143	  set2.clear();
+   144	  set1.add("testing");
+   145	  set2.add("testing");
+   146	  set1.add("identical");
+   147	  set2.add("identical");
+   148	  set1.add("sets");
+   149	  set2.add("sets");
+   150	
+   151	  // Show results set1, set2, and their difference
+   152	  cout << "Set1:" << endl;
+   153	  printSet(set1);
+   154	
+   155	  cout << "Set2:" << endl;
+   156	  printSet(set2);
+   157	  
+   158	  cout << "Difference Set1 to Set2:" << endl;
+   159	  printSet(set1.difference(set2) );
+   160	
+   161	  cout << "(additional) 8: LHS has every element in RHS plus more:" << endl;
+   162	
+   163	  // Add some extra stuff to LHS
+   164	  set1.add("extra");
+   165	  set1.add("stuff");
+   166	
+   167	  // Show results set1, set2, and their difference
+   168	  cout << "Set1:" << endl;
+   169	  printSet(set1);
+   170	
+   171	  cout << "Set2:" << endl;
+   172	  printSet(set2);
+   173	  
+   174	  cout << "Difference Set1 to Set2:" << endl;
+   175	  printSet(set1.difference(set2) );
+   176	
+   177	  cout << "(additional) 9: RHS has every element in LHS plus more:" << endl;
+   178	
+   179	  // Show results set1, set2, and their difference
+   180	  cout << "Set1:" << endl;
+   181	  printSet(set1);
+   182	
+   183	  cout << "Set2:" << endl;
+   184	  printSet(set2);
+   185	
+   186	  cout << "Difference Set2 to Set1 (switched operands):" << endl;
+   187	  printSet(set2.difference(set1) );
+   188	  
+   189	  return EXIT_SUCCESS;
+   190	}
+6% cat -n Li[K[KSetInterface.h 
+     1	/** @file
+     2	 
+     3	    @course CS1521
+     4	    @section 9
+     5	    @term Spring 2021
+     6	 
+     7	    SetInterface class template definition adapted from BagInterface.
+     8	
+     9	    Adapted from page 24-25 in Carrano 7e.
+    10	 
+    11	    @author Frank M. Carrano
+    12	    @author Timothy Henry
+    13	    @author Steve Holtz
+    14	    @author Reece Holmdahl (5727889)
+    15	 
+    16	    @date 20 Feb 2021
+    17	    
+    18	    @version 7.0 */
+    19	
+    20	#ifndef SET_INTERFACE_
+    21	#define SET_INTERFACE_
+    22	
+    23	#include <vector>
+    24	
+    25	/** @class SetInterface SetInterface.h "SetInterface.h"
+    26	    SetInterface abstract base class template. */
+    27	template <typename ItemType>
+    28	class SetInterface {
+    29	public:
+    30	  
+    31	  /** Virtual destructor. */
+    32	  virtual ~SetInterface() {}
+    33	
+    34	  /** Gets the current number of elements in this set.
+    35	      @return The integer number of elements currently in the set. */
+    36	  virtual int getCurrentSize() const = 0;
+    37	
+    38	  /** Checks whether this set is the empty set.
+    39	      @return True if the set contains no elements, or false if otherwise. */
+    40	  virtual bool isEmpty() const = 0;
+    41	
+    42	  /** Adds a new element to this set.
+    43	      @pre There must not already be an instance of newElement within the set.
+    44	
+    45	      @post If successful, newElement is an element of the set and the size of the set has increased by 1.
+    46	
+    47	      @param[in] newElement The object to be added as a new element.
+    48	
+    49	      @return True if the addition was successful, or false is not. */
+    50	  virtual bool add(const ItemType& newElement) = 0;
+    51	
+    52	  /** Removes an element from this set if possible.
+    53	      @pre There must be an instance of anElement within the set.
+    54	
+    55	      @post If successful, anElement was removed from the set and the size of the set has decreased by 1.
+    56	
+    57	      @param[in] anElement The value of the element to be removed.
+    58	
+    59	      @return True if the removal was successful, or false if not. */
+    60	  virtual bool remove(const ItemType& anElement) = 0;
+    61	
+    62	  /** Removes all elements from this set. It becomes the empty set.
+    63	      @post This set contains no elements and its size is 0. */
+    64	  virtual void clear() = 0;
+    65	
+    66	  /** Counts the number of times a given element appears in the set.
+    67	      @param[in] anElement The value of the element to be counted.
+    68	
+    69	      @return The number of times anElement appears in the set.*/
+    70	  virtual int getFrequencyOf(const ItemType& anElement) const = 0;
+    71	
+    72	  /** Checks whether this set contains a given element.
+    73	      @param[in] anElement The value of the element to locate.
+    74	
+    75	      @return True if this set contains anElement, or false if not. */
+    76	  virtual bool contains(const ItemType& anElement) const = 0;
+    77	
+    78	  /** Converts this set into a vector.
+    79	      @return A vector containing each element of this set. */
+    80	  virtual std::vector<ItemType> toVector() const = 0;
+    81	};
+    82	
+    83	#endif // SET_INTERFACE_
+7% cat -n SetInterface.h[K[K[K[K[K[K[K[K[K[K[K[K[K[KLinkedSet.h
+     1	/** @file
+     2	 
+     3	    @course CS1521
+     4	    @section 9
+     5	    @term Spring 2021
+     6	 
+     7	    Header file for a linked implementation of the ADT set.
+     8	 
+     9	    Adapted from page 139 in Carrano 7e.
+    10	
+    11	    @author Frank M. Carrano
+    12	    @author Timothy Henry
+    13	    @author Steve Holtz
+    14	    @author Reece Holmdahl (5727889)
+    15	 
+    16	    @date 20 Feb 2021
+    17	 
+    18	    @version 7.0 */
+    19	
+    20	#ifndef LINKED_SET_
+    21	#define LINKED_SET_
+    22	
+    23	#include <vector>
+    24	
+    25	#include "SetInterface.h"
+    26	#include "Node.h"
+    27	
+    28	/** @class LinkedSet LinkedSet.h "LinkedSet.h"
+    29	    Specification of a pointer-based ADT set. */
+    30	template <typename ItemType>
+    31	class LinkedSet : public SetInterface<ItemType> {
+    32	private:
+    33	  
+    34	  /** Define nested data type 'NodePtr'. Create a more "friendly" type name for a pointer-to-a-node-of-ItemType. */
+    35	  using NodePtr = Node<ItemType>*;
+    36	
+    37	  /** Pointer to first node in this LinkedSet's linked chain.
+    38	      Default initialized to 'nullptr', which is an empty linked chain. */
+    39	  NodePtr headPtr = nullptr;
+    40	
+    41	  /** Number of items in this set. An empty set has no (zero) items. */
+    42	  int itemCount = 0;
+    43	
+    44	  /** Gets a pointer to the node containing the target in this set.
+    45	      @pre None.
+    46	      @post None.
+    47	   
+    48	      @param target The 'ItemType' value to find.
+    49	   
+    50	      @return A pointer to the node that contains the given 'target' or 'nullptr' if this set does not contain 'target'. */
+    51	  NodePtr getPointerTo(const ItemType& target) const;
+    52	
+    53	public:
+    54	  
+    55	  /** Default constructor. */
+    56	  LinkedSet() = default;
+    57	
+    58	  /** Copy constructor. */
+    59	  LinkedSet(const LinkedSet<ItemType>& aSet);
+    60	
+    61	  virtual ~LinkedSet();
+    62	
+    63	  virtual int getCurrentSize() const;
+    64	
+    65	  virtual bool isEmpty() const;
+    66	
+    67	  virtual bool add(const ItemType& newEntry);
+    68	
+    69	  virtual bool remove(const ItemType& anEntry);
+    70	
+    71	  virtual void clear();
+    72	
+    73	  virtual int getFrequencyOf(const ItemType& anEntry) const;
+    74	
+    75	  virtual bool contains(const ItemType& anEntry) const;
+    76	
+    77	  virtual std::vector<ItemType> toVector() const;
+    78	
+    79	  /** Creates a new set containing all of the items in this set that are not in 'set2'.
+    80	      @param[in] set2 The LinkedSet of the same item type to take the difference with.
+    81	      
+    82	      @return The LinkedSet of the same item type representing the difference between this set and 'set2'. */
+    83	  virtual LinkedSet<ItemType> difference(const LinkedSet<ItemType>& set2) const;
+    84	};
+    85	
+    86	#include "LinkedSet.cpp"
+    87	
+    88	#endif
+8% cat -n LinkedSet.h[Kcpp
+     1	/** @file
+     2	 
+     3	    @course CS1521
+     4	    @section 9
+     5	    @term Spring 2021
+     6	 
+     7	    Implementation file for the class LinkedSet.
+     8	 
+     9	    Adapted from pages 139-148 in Carrano 7e.
+    10	 
+    11	    @author Frank M. Carrano
+    12	    @author Timothy Henry
+    13	    @author Steve Holtz
+    14	    @author Reece Holmdahl (5727889) 
+    15	    
+    16	    @date 20 Feb 2021
+    17	    
+    18	    @version 7.0 */
+    19	
+    20	#include <vector>
+    21	
+    22	template <typename ItemType>
+    23	LinkedSet<ItemType>::LinkedSet(const LinkedSet<ItemType>& aSet) {
+    24	
+    25	  itemCount = aSet.itemCount;
+    26	
+    27	  // If 'aSet.headPtr' is not pointing at a node:
+    28	  if (!aSet.headPtr) { // aSet.headPtr == nullptr (!nullptr == true)
+    29	    headPtr = nullptr;
+    30	  }
+    31	  else {
+    32	    NodePtr origChainPtr(aSet.headPtr);
+    33	
+    34	    headPtr = new Node<ItemType>(origChainPtr->getItem() );
+    35	
+    36	    NodePtr newChainPtr(headPtr);
+    37	
+    38	    origChainPtr = origChainPtr->getNext();
+    39	
+    40	    while (origChainPtr) { // while (origChainPtr != nullptr) {
+    41	      newChainPtr->setNext(new Node<ItemType>(origChainPtr->getItem()) );
+    42	
+    43	      newChainPtr = newChainPtr->getNext();
+    44	      origChainPtr = origChainPtr->getNext();
+    45	    }
+    46	  }
+    47	}
+    48	
+    49	template <typename ItemType>
+    50	LinkedSet<ItemType>::~LinkedSet() {
+    51	
+    52	  clear();
+    53	}
+    54	
+    55	template <typename ItemType>
+    56	int LinkedSet<ItemType>::getCurrentSize() const {
+    57	
+    58	  return itemCount;
+    59	}
+    60	
+    61	template <typename ItemType>
+    62	bool LinkedSet<ItemType>::isEmpty() const {
+    63	
+    64	  return !itemCount;
+    65	}
+    66	
+    67	template <typename ItemType>
+    68	bool LinkedSet<ItemType>::add(const ItemType& newEntry) {
+    69	
+    70	  bool canAdd(!contains(newEntry) );
+    71	
+    72	  if (canAdd) {
+    73	    headPtr = new Node<ItemType>(newEntry, headPtr);
+    74	    ++itemCount;
+    75	  }
+    76	
+    77	  return canAdd;
+    78	}
+    79	
+    80	template <typename ItemType>
+    81	bool LinkedSet<ItemType>::remove(const ItemType& anEntry) {
+    82	
+    83	  NodePtr entryNodePtr(getPointerTo(anEntry) );
+    84	
+    85	  // If 'entryNodePtr' is pointing at a node:
+    86	  if (entryNodePtr) { // entryNodePtr != nullptr (nullptr == false)
+    87	    entryNodePtr->setItem(headPtr->getItem() );
+    88	
+    89	    NodePtr nodeToDeletePtr(headPtr);
+    90	
+    91	    headPtr = headPtr->getNext();
+    92	
+    93	    delete nodeToDeletePtr;
+    94	
+    95	    --itemCount;
+    96	  }
+    97	
+    98	  return static_cast<bool>(entryNodePtr);
+    99	}
+   100	
+   101	template <typename ItemType>
+   102	Node<ItemType>*
+   103	LinkedSet<ItemType>::getPointerTo(const ItemType& target) const {
+   104	
+   105	  NodePtr curPtr(headPtr);
+   106	
+   107	  while (curPtr) { // curPtr != nullptr
+   108	    if (curPtr->getItem() == target) {
+   109	      return curPtr;
+   110	    }
+   111	
+   112	    curPtr = curPtr->getNext();
+   113	  }
+   114	
+   115	  return nullptr; // curPtr == nullptr so 'return curPtr;' works.
+   116	}
+   117	
+   118	template <typename ItemType>
+   119	void LinkedSet<ItemType>::clear() {
+   120	
+   121	  NodePtr nodeToDeletePtr(headPtr);
+   122	
+   123	  while (headPtr) { // headPtr != nullptr
+   124	    headPtr = headPtr->getNext();
+   125	
+   126	    delete nodeToDeletePtr;
+   127	
+   128	    nodeToDeletePtr = headPtr;
+   129	  }
+   130	
+   131	  // Note that headPtr == nodeToDeletePtr == nullptr
+   132	  itemCount = 0;
+   133	}
+   134	
+   135	template <typename ItemType>
+   136	bool
+   137	LinkedSet<ItemType>::contains(const ItemType& anEntry) const {
+   138	
+   139	  return static_cast<bool>(getPointerTo(anEntry) ); // ... != nullptr;
+   140	}
+   141	
+   142	template <typename ItemType>
+   143	int
+   144	LinkedSet<ItemType>::getFrequencyOf(const ItemType& anEntry) const {
+   145	
+   146	  int frequency(0);
+   147	
+   148	  NodePtr curPtr(headPtr);
+   149	
+   150	  while (curPtr) { // != nullptr
+   151	    if (curPtr->getItem() == anEntry) {
+   152	      ++frequency;
+   153	    }
+   154	
+   155	    curPtr = curPtr->getNext();
+   156	  }
+   157	
+   158	  return frequency;
+   159	}
+   160	
+   161	template <typename ItemType>
+   162	std::vector<ItemType> LinkedSet<ItemType>::toVector() const {
+   163	
+   164	  std::vector<ItemType> setContents;
+   165	
+   166	  NodePtr curPtr(headPtr);
+   167	
+   168	  while (curPtr) { // != nullptr
+   169	    setContents.push_back(curPtr->getItem() );
+   170	
+   171	    curPtr = curPtr->getNext();
+   172	  }
+   173	
+   174	  return setContents;
+   175	}
+   176	
+   177	template <typename ItemType>
+   178	LinkedSet<ItemType> LinkedSet<ItemType>::difference(const LinkedSet<ItemType>& set2) const {
+   179	
+   180	  LinkedSet<ItemType> difference;
+   181	  
+   182	  for (NodePtr curPtr(headPtr); curPtr; curPtr = curPtr->getNext() ) {
+   183	    ItemType element(curPtr->getItem() );
+   184	    if (!set2.contains(element) ) {
+   185	      difference.add(element);
+   186	    }
+   187	  }
+   188	  
+   189	  return difference;
+   190	}
+9% git --no-pager log --no-color
+commit 6c3746940d12f6be62d3ed1cf43dc52d1064173a (HEAD -> master)
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 23 16:12:34 2021 -0600
+
+    Gitignore, file removed from dir no longer needed in ignore.
+
+commit 6933abdd7197f44a3d4d7c538818e3fda4e7a64b
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 23 16:11:37 2021 -0600
+
+    Finished the program's main routine. Doing some final tests to verify the program's validity, then will submit.
+
+commit bcaefdeac55d3e4a04754c460107a7814a26e2ed
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 23 14:48:28 2021 -0600
+
+    Made subdirectory containing dictionary and test correction cases. Added it to gitignore as it does not need version control. Working on file IO and reading in and out. Correctly implemented clean(string) and toLower(string) and they have been documented.
+
+commit 33763f478dc0b167cd3771a9aaa4732cd74fdbba
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 23 12:04:42 2021 -0600
+
+    Made preliminary implementation of clean(string) and toLower(string) in a new main driver file (main.cpp). I also added the executable to the CMakeLists.txt file for separate compilation.
+
+commit efbbd32a20fdcca8af85cf443e17aaa21811995f
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sun Feb 21 12:50:48 2021 -0600
+
+    Lab 3 driver now performing as expected just as it would with ArraySet. Added file_io demo and quick test script to the gitignore file.
+
+commit 85cab50b94365c645d2af243fad599cc2cd956fb
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 20 14:41:18 2021 -0600
+
+    Copied and converted the lab3 driver file to this project to check the linked set. Made CMakeLists, out of source build directory (and gitignored it) and assured that project compiles.
+
+commit 88f5cf4b80133d95fb308d7abfbb6b29975b5518
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 20 13:51:57 2021 -0600
+
+    Updated class names and members using query replace bag->set. Implemented difference method based off of lab3 array set's. Updated comments.
+
+commit 0614a423d49f327f0f7acb666ca8c6cab4aaa26b
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Sat Feb 20 13:40:30 2021 -0600
+
+    Added all default files to the working tree.
+10% cd build/
+11% make
+[ 25%] [32mBuilding CXX object CMakeFiles/main_test.dir/main.cpp.o[0m
+[ 50%] [32m[1mLinking CXX executable main_test[0m
+[ 50%] Built target main_test
+[ 75%] [32mBuilding CXX object CMakeFiles/lab3_test.dir/lab3driver.cpp.o[0m
+[100%] [32m[1mLinking CXX executable lab3_test[0m
+[100%] Built target lab3_test
+12% m[K./main_test
+Enter the name of a dictionary file: ../test-files/small.dat
+
+Enter the name of a file to spell check (or "exit" to quit): ../test-files/small.dat         alice.txt
+The misspelled words are as follows:
+alice's, adventures, wonderland, lewis, carroll, millennium, fulcrum, 3.0, i, rabbit-hole, alice, tired, sister, peeped, conversations, sleepy, pleasure, daisy-chain, daisies, rabbit, pink, remarkable, afterwards, waistcoat, hurried, waistcoat-pocket, burning, curiosity, hedge, tunnel, dipped, cupboards, book-shelves, maps, pegs, jar, shelves, labelled, orange, marmalade, disappointment, tumbling, stairs, brave, they'll, wouldn't
+
+Enter the name of a file to spell check (or "exit" to quit): ../test-files/small.dat         custom.txt
+The misspelled words are as follows:
+i, proc, needn't
+
+Enter the name of a file to spell check (or "exit" to quit): ../test-files/small.dat         hello.txt
+The misspelled words are as follows:
+program
+
+Enter the name of a file to spell check (or "exit" to quit): ../test-files/small.dat     l.dat
+There are no misspelled words in this document.
+
+Enter the name of a file to spell check (or "exit" to quit): exit
+13% ./main_test
+Enter the name of a dictionary file: dd
+Could not find the file "dd".
+Try again, and enter the name of another dictionary file (or "exit" to quit): not-  a file
+Could not find the file "not".
+Try again, and enter the name of another dictionary file (or "exit" to quit): Could not find the file "a".
+Try again, and enter the name of another dictionary file (or "exit" to quit): Could not find the file "file".
+Try again, and enter the name of another dictionary file (or "exit" to quit): exit
+14% ./main_test
+Enter the name of a dictionary file: ../test-files/small.dat         words.dat
+
+Enter the name of a file to spell check (or "exit" to quit): ../test-files/small.dat         alice.dat   txt
+The misspelled words are as follows:
+3.0, rabbit-hole, daisy-chain, afterwards, waistcoat-pocket, book-shelves, labelled
+
+Enter the name of a file to spell check (or "exit" to quit): ../test-files/small.dat         custom.txt
+The misspelled words are as follows:
+proc
+
+Enter the name of a file to spell check (or "exit" to quit): ../test-files/small.dat         hello.txt
+There are no misspelled words in this document.
+
+Enter the name of a file to spell check (or "exit" to quit): ../test-files/small.dat         small.dat
+There are no misspelled words in this document.
+
+Enter the name of a file to spell check (or "exit" to quit): not-a-file
+Could not open the file "not-a-file", try again.
+Enter the name of a file to spell check (or "exit" to quit): also-not-a-file
+Could not open the file "also-not-a-file", try again.
+Enter the name of a file to spell check (or "exit" to quit): alice.t       ../test-files/small.dat         alice.txt
+The misspelled words are as follows:
+3.0, rabbit-hole, daisy-chain, afterwards, waistcoat-pocket, book-shelves, labelled
+
+Enter the name of a file to spell check (or "exit" to quit): eix  xit
+15% exit
+exit
+
+Script done on 2021-02-23 16:24:18-0600

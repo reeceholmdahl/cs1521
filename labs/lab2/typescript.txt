@@ -1,0 +1,438 @@
+Script started on 2021-02-02 17:14:41-0600
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab2[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab2[00m$ pwd
+/home/rholm/cs1521/labs/lab2
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab2[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab2[00m$ ls -l
+total 40
+-rwxr-xr-x 1 rholm rholm  393 Feb  2 17:09 [0m[01;32mCMakeLists.txt[0m
+-rwxr-xr-x 1 rholm rholm  375 Feb  2 17:07 [01;32mCMakeLists.txt~[0m
+drwxr-xr-x 3 rholm rholm 4096 Feb  2 17:08 [01;34mbuild[0m
+-rwxr-xr-x 1 rholm rholm 4568 Feb  2 17:10 [01;32mdriver.cpp[0m
+-rwxr-xr-x 1 rholm rholm 4547 Feb  2 17:07 [01;32mdriver.cpp~[0m
+-rwxr-xr-x 1 rholm rholm 2653 Feb  2 17:07 [01;32mpolynomial.cpp[0m
+-rwxr-xr-x 1 rholm rholm 1980 Feb  2 17:07 [01;32mpolynomial.h[0m
+-rwxr-xr-x 1 rholm rholm   27 Feb  2 17:07 [01;32mqrun[0m
+-rw-r--r-- 1 rholm rholm    0 Feb  2 17:14 typescript.txt
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab2[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab2[00m$ cat -n CMakeLists.txt
+     1	# My ID#: 5727889
+     2	cmake_minimum_required(VERSION 3.10)
+     3	
+     4	project("CS1521 Lab 2"
+     5	  VERSION 0.0.0
+     6	  DESCRIPTION "Lab 2, practicing encapsulation and ADT usage from a client perspective"
+     7	  LANGUAGES CXX)
+     8	
+     9	add_compile_options(-Wall -Wextra -Wpedantic)
+    10	
+    11	set(CMAKE_CXX_STANDARD 14)
+    12	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    13	set(CMAKE_CXX_EXTENSIONS OFF)
+    14	
+    15	add_executable(lab2
+    16	  driver.cpp
+    17	  polynomial.cpp)
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab2[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab2[00m$ cat -n driver.cpp
+     1	// My ID#: 5727889XS
+     2	#include <iostream>
+     3	#include "polynomial.h"
+     4	
+     5	using std::cout;
+     6	using std::endl;
+     7	
+     8	/** Creates and returns a polynomial object with coefficients as per the parameters. If the coefficients array is empty, it simply creates a default polynomial.
+     9	    @param[in] coefficients An integer array reference containing (ordered highest to lowest by degree) the coefficients of the polynomial to create.
+    10	    @param[in] length The length of the coefficients array.
+    11	    @pre the parameter 'length' corresponds with the lenght of the coefficients array.
+    12	    @return A polynomial that corresponds to the coefficients array. */
+    13	Polynomial makePoly(const int coefficients[], const int length) {
+    14	  Polynomial poly;
+    15	
+    16	  // Iterate through the array and assign coefficients to polynomial object
+    17	  for (int i = 0; i < length; i++) {
+    18	    int coeff = coefficients[length - 1 - i];
+    19	    poly.setCoefficient(coeff, i);
+    20	  }
+    21	
+    22	  return poly;
+    23	}
+    24	
+    25	/** Gets the coefficient of the highest degree of the passed polynomial.
+    26	    @param[in] poly The polynomial that this function will act upon.
+    27	    @pre The polynomial must have at least one non-zero coefficient.
+    28	    @return An integer that represents the coefficient of the highest degree of the polynomial. */
+    29	int highestDegreeCoeff(const Polynomial &poly) {
+    30	  return poly.coefficient(poly.degree());
+    31	}
+    32	
+    33	/** Increases the coefficient of the supplied exponent by value for the passed polynomial object.
+    34	    @param[in, out] poly The polynomial to act upon.
+    35	    @param[in] exp The exponent at which the coefficient will be modified.
+    36	    @param[in] value The value to change the coefficient by.
+    37	    @post The polynomial object will have the coefficient at the exponent 'exp' changed by 'value.'
+    38	    @return The reference to the polynomial object passed in with modifications as per this contract. */
+    39	Polynomial increaseCoeff(Polynomial &poly, const unsigned exp, const int value) {
+    40	  // Calculate the new coefficient of the exponent
+    41	  int newCoeff = poly.coefficient(exp) + value;
+    42	  // Set the coefficient of the exponent to the new calculated one
+    43	  poly.setCoefficient(newCoeff, exp);
+    44	  return poly;
+    45	}
+    46	
+    47	/** Computes the sum of the two passed polynomial objects and returns it as a new polynomial object.
+    48	    @param[in] poly1
+    49	    @param[in] poly2
+    50	    @pre Both polynomial objects passed as parameters must have at least one non-zero coefficient.
+    51	    @post There exists a polynomial object that is the sum of the two passed polynomial objects.
+    52	    @return A polynomial object that has values such that it is the sum of the two passed polynomial objects. */
+    53	Polynomial addPolynomials(const Polynomial &poly1, const Polynomial &poly2) {
+    54	  int d1 = poly1.degree();
+    55	  int d2 = poly2.degree();
+    56	
+    57	  // Get the higher degree of the two
+    58	  int degree = d1 > d2 ? d1 : d2;
+    59	
+    60	  // Make the sum polynomial object
+    61	  Polynomial sum;
+    62	
+    63	  // Add the two polynomial objects via for loop size >degree
+    64	  for (int i = 0; i <= degree; i++) {
+    65	    int coeff = poly1.coefficient(i) + poly2.coefficient(i);
+    66	    sum.setCoefficient(coeff, i);
+    67	  }
+    68	  
+    69	  return sum;
+    70	}
+    71	
+    72	int main() {
+    73	  // Testing
+    74	
+    75	  // Make polynomials for testing
+    76	  int p1c[5] = {3, 0, 2, 0, 1};
+    77	  Polynomial p1 = makePoly(p1c, 5);
+    78	
+    79	  int p2c[3] = {5, 1, 10};
+    80	  Polynomial p2 = makePoly(p2c, 3);
+    81	  increaseCoeff(p2, 3, 2); // Increase x^3 exponent coeff by 2
+    82	
+    83	  Polynomial empty;
+    84	
+    85	  int p3c[7] = {1, 2, 3, 4, 5, 6, 7};
+    86	  Polynomial p3 = makePoly(p3c, 7);
+    87	
+    88	  int p4c[5] = {-2, 2, 1, 5, 3};
+    89	  Polynomial p4 = makePoly(p4c, 5);
+    90	
+    91	  // Test functionality
+    92	
+    93	  // Initial polynomials
+    94	  cout << "Initial polynomials" << endl;
+    95	  cout << "P1: " << p1.print() << endl;
+    96	  cout << "P2: " << p2.print() << endl;
+    97	  cout << "P3: " << p3.print() << endl;
+    98	  cout << "P4: " << p4.print() << endl;
+    99	  cout << "Empty poly: " << empty.print() << endl << endl;
+   100	
+   101	  cout << "Highest degree coefficient P3 " << highestDegreeCoeff(p3) << endl;
+   102	  cout << "Highest degree coefficient P2 " << highestDegreeCoeff(p2) << endl << endl;
+   103	
+   104	  Polynomial sumP1P4 = addPolynomials(p1, p4);
+   105	
+   106	  cout << "P4: Increasing exponent 4 by 2" << endl;
+   107	  cout << "P1: Increasing epxonent 4 by 1" << endl;
+   108	  cout << "Empty: Increasing exponent 1 by 5" << endl << endl;
+   109	  increaseCoeff(p4, 4, 2);
+   110	  increaseCoeff(p1, 4, 1);
+   111	  increaseCoeff(empty, 1, 5);
+   112	
+   113	  cout << "Final polynomials" << endl;
+   114	  cout << "P1: " << p1.print() << endl;
+   115	  cout << "P2: " << p2.print() << endl;
+   116	  cout << "P3: " << p3.print() << endl;
+   117	  cout << "P4: " << p4.print() << endl;
+   118	  cout << "Empty poly: " << empty.print() << endl;
+   119	  cout << "Sum P1+P4 " << sumP1P4.print() << endl;
+   120	}
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab2[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab2[00m$ cat -n driver.cpp[K[K[K[K[K[K[K[K[K[Kpolynomial.h
+     1	#ifndef POLYNOMIAL_
+     2	#define POLYNOMIAL_
+     3	
+     4	#include <string>
+     5	#include <map>
+     6	
+     7	class Polynomial {
+     8	public:
+     9	   /** Gets the degree of this polynomial.
+    10	    *
+    11	    * The degree (or order) of a polynomial is the highest exponent
+    12	    * found on a term with a nonzero coefficient.
+    13	    *
+    14	    * @return The degree of this polynomial.
+    15	    */
+    16	   unsigned degree() const;
+    17	
+    18	   /** Gets the coefficient of the term with 'exponent' power.
+    19	    *
+    20	    * If there is no term with power 'exponent', then zero is
+    21	    * returned, as zero times a term is zero (and that term is not
+    22	    * shown when it is written down).
+    23	    *
+    24	    * @param exponent The exponent of the term to get the coefficient
+    25	    *                 for.
+    26	    *
+    27	    * @return The coefficient for the term with 'exponent' power.
+    28	    */
+    29	   int coefficient(unsigned exponent) const;
+    30	
+    31	   /** Set the coefficient for the term with 'exponent' power to
+    32	    * 'newCoefficient'.
+    33	    *
+    34	    * Note that if a term's coefficient is set to zero, then that term
+    35	    * is removed from the polynomial (as it no long has a meaningful
+    36	    * value).
+    37	    *
+    38	    * @param newCoefficient The new coefficient for the term with
+    39	    *                       'exponent' power.
+    40	    *
+    41	    * @param exponent The exponent of the term to change the
+    42	    *                 coefficient of to 'newCoefficient'.
+    43	    */
+    44	   void setCoefficient(int newCoefficient,
+    45	                       unsigned exponent);
+    46	
+    47	   /** Print polynomial.
+    48	    *
+    49	    * @return Converts this polynomial to a string and returns it.
+    50	    */
+    51	   std::string print() const;
+    52	
+    53	   /** Constructor. */
+    54	   Polynomial() = default;
+    55	
+    56	   /** Copy constructor. */
+    57	   Polynomial(const Polynomial&);
+    58	
+    59	   /** Move constructor. */
+    60	   Polynomial(Polynomial&&);
+    61	
+    62	   /** Destructor. */
+    63	   ~Polynomial() = default;
+    64	
+    65	   /** Copy assignment operator. */
+    66	   Polynomial& operator=(const Polynomial&);
+    67	
+    68	   /** Move assignment operator. */
+    69	   Polynomial& operator=(Polynomial&&);
+    70	
+    71	private:
+    72	   std::map<unsigned, int> expCoef;
+    73	};
+    74	
+    75	#endif
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab2[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab2[00m$ cat -n polynomial.h[Kcpp
+     1	#include <string>
+     2	#include <sstream>
+     3	#include <cmath>
+     4	
+     5	#include "polynomial.h"
+     6	
+     7	Polynomial::Polynomial(const Polynomial& in) {
+     8	
+     9	   expCoef = in.expCoef;
+    10	}
+    11	
+    12	Polynomial::Polynomial(Polynomial&& in) {
+    13	
+    14	   expCoef = std::move(in.expCoef);
+    15	}
+    16	
+    17	Polynomial& Polynomial::operator=(const Polynomial& rhs) {
+    18	
+    19	   if (this != &rhs) {
+    20	      decltype(expCoef) temp(rhs.expCoef);
+    21	      expCoef.clear();
+    22	      expCoef = temp;
+    23	   }
+    24	
+    25	   return *this;
+    26	}
+    27	
+    28	Polynomial& Polynomial::operator=(Polynomial&& rhs) {
+    29	
+    30	   if (this != &rhs) {
+    31	      expCoef.clear();
+    32	      expCoef.swap(rhs.expCoef);
+    33	   }
+    34	
+    35	   return *this;
+    36	}
+    37	
+    38	unsigned Polynomial::degree() const {
+    39	
+    40	   auto last(expCoef.crbegin() );
+    41	
+    42	   return last->first;
+    43	}
+    44	
+    45	int Polynomial::coefficient(unsigned exponent) const {
+    46	
+    47	   unsigned coef(0);
+    48	
+    49	   if (expCoef.count(exponent) > 0) {
+    50	      coef = expCoef.at(exponent);
+    51	   }
+    52	
+    53	   return coef;
+    54	}
+    55	
+    56	void Polynomial::setCoefficient(int newCoefficient,
+    57	                                unsigned exponent) {
+    58	
+    59	   if (newCoefficient != 0) {
+    60	      expCoef[exponent] = newCoefficient;
+    61	   }
+    62	   else if (expCoef.count(exponent) != 0) {
+    63	      expCoef.erase(exponent);
+    64	   }
+    65	}
+    66	
+    67	std::string Polynomial::print() const {
+    68	
+    69	   std::ostringstream outStr;
+    70	
+    71	   auto iter(expCoef.crbegin() );
+    72	
+    73	   for (; iter != expCoef.crend(); ++iter) {
+    74	      if (iter->second == 1 && iter->first == 0 && iter != expCoef.crbegin() ) {
+    75	         outStr << "+ 1"; // Plus 1
+    76	      }
+    77	      else if (iter->second == 1 && iter->first == 0) {
+    78	         outStr << "1";
+    79	      }
+    80	      else if (iter->second == -1 && iter->first == 0 && iter != expCoef.crbegin() ) {
+    81	         outStr << "- 1"; // Minus 1
+    82	      }
+    83	      else if (iter->second == -1 && iter->first == 0) {
+    84	         outStr << "-1";
+    85	      }
+    86	      else if (iter->second == -1 && iter == expCoef.crbegin() ) {
+    87	         outStr << "-"; // Negative sign
+    88	      }
+    89	      else if (iter->second == -1) {
+    90	         outStr << "- "; // Minus operator
+    91	      }
+    92	      else if (iter->second < -1 && iter == expCoef.crbegin() ) {
+    93	         outStr << "-"
+    94	                << std::abs(iter->second); // Minus coefficient
+    95	      }
+    96	      else if (iter->second < -1) {
+    97	         outStr << "- "
+    98	                << std::abs(iter->second); // Minus coefficient
+    99	      }
+   100	      else if (iter->second == 1 && iter == expCoef.crbegin() ) {
+   101	         ; // Do nothing
+   102	      }
+   103	      else if (iter->second == 1) {
+   104	         outStr << "+ "; // Plus operator
+   105	      }
+   106	      else {
+   107	         outStr << "+ "
+   108	                << iter->second; // Plus coefficient
+   109	      }
+   110	      if (iter->first != 0) {
+   111	         outStr << "x^"
+   112	                << iter->first
+   113	                << " ";
+   114	      }
+   115	   }
+   116	
+   117	   return outStr.str();
+   118	}
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab2[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab2[00m$ git --no-pager log --no-color
+commit d4270db65a269da22cda619ca1f4384c0a50d224 (HEAD -> master)
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 2 17:05:17 2021 -0600
+
+    Canvas turn in date is February 3, continuing work. Fixed tests so I satisfy the precondition of my own functions. *dope* Tests now appear to work.
+
+commit b809e37d325f2fd26040b709303dca59744d3358
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 2 16:54:19 2021 -0600
+
+    Couldn't quite finish. Committing what I have and doing typescript
+
+commit 4a30d98e060b4e94d746e79f73620353e8b89eb9
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 2 16:43:53 2021 -0600
+
+    Implemented task 2 and 3: Increase the coefficient of a given exponenet on a supplied polynomial object, and add two polynomial objects and return the sum as a new polynomial object.
+
+commit 62892a0cc5eb736b83bb5248e6f04a7cb837edfb
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 2 16:26:21 2021 -0600
+
+    Added a script to easily run tests and build. Updated the precondition of the function to get the coeff of the highest degree of a poly.
+
+commit 561b255f5f5d1f3a874e4b0200cb0052bc21b44e
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 2 15:22:28 2021 -0600
+
+    Added a helper function to make polynomials of great size very easily.
+
+commit 300c1f395e2da3ace397a5920c8fdf2f3130488e
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 2 00:25:07 2021 -0600
+
+    Realized I was using the polynomial interface wrong, corrected my mistake. Appearing to have successfully implemented the task of returning the coefficient of the highest degree of a given polynomial.
+
+commit 3cf1dd2acdb7153f8b364000699554de4bd65693
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 2 00:13:41 2021 -0600
+
+    Corrected error with my polynomial initialization. Setup CMake build system and set git to ignore the build directory.
+
+commit 651efa29dded532e43eeb78bbdffa140d4bce9d2
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 2 00:05:32 2021 -0600
+
+    Made driver file and within it created a test polynomial object.
+
+commit 4d5b9500e3017886e63e4d0d5a78af38c70d11f9
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Feb 2 00:03:29 2021 -0600
+
+    Initial commit. Includes required lab files.
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab2[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab2[00m$ cd build/
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab2/build[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab2/build[00m$ make
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/rholm/cs1521/labs/lab2/build
+[35m[1mScanning dependencies of target lab2[0m
+[ 33%] [32mBuilding CXX object CMakeFiles/lab2.dir/driver.cpp.o[0m
+[ 66%] [32mBuilding CXX object CMakeFiles/lab2.dir/polynomial.cpp.o[0m
+[100%] [32m[1mLinking CXX executable lab2[0m
+[100%] Built target lab2
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab2/build[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab2/build[00m$ ./lab2 
+Initial polynomials
+P1: + 3x^4 + 2x^2 + 1
+P2: + 2x^3 + 5x^2 + x^1 + 10
+P3: x^6 + 2x^5 + 3x^4 + 4x^3 + 5x^2 + 6x^1 + 7
+P4: -2x^4 + 2x^3 + x^2 + 5x^1 + 3
+Empty poly: 
+
+Highest degree coefficient P3 1
+Highest degree coefficient P2 2
+
+P4: Increasing exponent 4 by 2
+P1: Increasing epxonent 4 by 1
+Empty: Increasing exponent 1 by 5
+
+Final polynomials
+P1: + 4x^4 + 2x^2 + 1
+P2: + 2x^3 + 5x^2 + x^1 + 10
+P3: x^6 + 2x^5 + 3x^4 + 4x^3 + 5x^2 + 6x^1 + 7
+P4: + 2x^3 + x^2 + 5x^1 + 3
+Empty poly: + 5x^1 
+Sum P1+P4 x^4 + 2x^3 + 3x^2 + 5x^1 + 4
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab2/build[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab2/build[00m$ exit
+exit
+
+Script done on 2021-02-02 17:15:29-0600

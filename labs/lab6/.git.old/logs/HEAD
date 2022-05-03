@@ -1,0 +1,5 @@
+0000000000000000000000000000000000000000 78fd9d16ffdab6631c4e2481d07f94feb0e44ef7 Reece Holmdahl <reece.holmdahl@fastmail.com> 1617128412 -0500	commit (initial): Added base files to directory.
+78fd9d16ffdab6631c4e2481d07f94feb0e44ef7 7832d63998fd5002f96c2e6dfbbab32da473afa5 Reece Holmdahl <reece.holmdahl@fastmail.com> 1617128444 -0500	commit: Made build dir and gitignore
+7832d63998fd5002f96c2e6dfbbab32da473afa5 25ada5767b98f7c5da68bb992a8308938cf24274 Reece Holmdahl <reece.holmdahl@fastmail.com> 1617128902 -0500	commit: Added other base files to directory. Will update linked stack implementation to use smart pointers and safe mem mgmt.
+25ada5767b98f7c5da68bb992a8308938cf24274 9f17176d68ee911a98338908403a237975e31bb0 Reece Holmdahl <reece.holmdahl@fastmail.com> 1617130543 -0500	commit: Made smart pointer adaptation to linked stack, made first draft of isPalindrome algorithm, and made cmake lists.
+9f17176d68ee911a98338908403a237975e31bb0 447818a926fa58e3c1c2f4b790a96774b35f1535 Reece Holmdahl <reece.holmdahl@fastmail.com> 1617130731 -0500	commit: Fixed small errors in implementation, added precond violated files and added them to cmake lists.

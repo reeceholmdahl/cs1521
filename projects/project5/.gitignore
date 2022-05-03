@@ -1,0 +1,2 @@
+# ignore out of src build dir
+build/

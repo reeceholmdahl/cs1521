@@ -1,0 +1,726 @@
+Script started on 2021-03-02 14:41:01-0600
+1% pwd
+/home/csugrads/holmd353/labs/lab4
+2% ls -l
+total 52
+drwxr-xr-x 4 holmd353 student 4096 Mar  2 14:40 build
+-rw------- 1 holmd353 student  349 Mar  2 14:38 CMakeLists.txt
+-rwx------ 1 holmd353 student  996 Mar  2 14:38 driver.cpp
+-rw------- 1 holmd353 student  569 Mar  2 14:38 getPosition.cpp
+-rw------- 1 holmd353 student  577 Mar  2 14:39 getPosition.h
+-rwx------ 1 holmd353 student 4186 Mar  2 14:38 LinkedList.cpp
+-rwx------ 1 holmd353 student 1532 Mar  2 14:38 LinkedList.h
+-rwx------ 1 holmd353 student 3161 Mar  2 14:38 ListInterface.h
+-rwx------ 1 holmd353 student  914 Mar  2 14:39 Node.cpp
+-rwx------ 1 holmd353 student  789 Mar  2 14:38 Node.h
+-rwx------ 1 holmd353 student  507 Mar  2 14:38 PrecondViolatedExcep.cpp
+-rwx------ 1 holmd353 student  771 Mar  2 14:38 PrecondViolatedExcep.h
+-rw------- 1 holmd353 student    0 Mar  2 14:41 typescript.txt
+3% cat -n CMakeLists.txt 
+     1	# My ID#: 5727889
+     2	cmake_minimum_required(VERSION 3.10)
+     3	
+     4	project("Lab 4 getPosition"
+     5	  VERSION 0.0.0
+     6	  DESCRIPTION "Lab 4 using LinkedList version"
+     7	  LANGUAGES CXX)
+     8	
+     9	add_compile_options(-Wall -Wextra -Wpedantic)
+    10	
+    11	set(CXX_STANDARD 17)
+    12	set(CXX_STANDARD_REQUIRED ON)
+    13	set(CXX_EXTENSIONS OFF)
+    14	
+    15	add_executable(lab4
+    16	  driver.cpp
+    17	  PrecondViolatedExcep.cpp)
+4% cat -n driver.cpp 
+     1	// My ID#: 5727889
+     2	// Using linked list implementation
+     3	//#define USE_ARRAY_LIST
+     4	 
+     5	#include <iostream>
+     6	
+     7	#ifdef USE_ARRAY_LIST
+     8	#include "ArrayList.h"
+     9	#else
+    10	#include "LinkedList.h"
+    11	#endif
+    12	 
+    13	#include "getPosition.h"
+    14	 
+    15	int main() {
+    16	 
+    17	#ifdef USE_ARRAY_LIST
+    18	   ArrayList<int> list;
+    19	#else
+    20	   LinkedList<int> list;
+    21	#endif
+    22	
+    23	   list.insert(1, 9);
+    24	   list.insert(2, 5);
+    25	   list.insert(1, 0);
+    26	   list.insert(2, 3);
+    27	   list.insert(4, 2);
+    28	 
+    29	   int position(0);
+    30	   int value(0);
+    31	
+    32	   while (std::cin >> value) {
+    33	 
+    34	      if ((position = getPosition(list, value)) <= list.getLength() ) {
+    35	         std::cout << "list["
+    36	                   << position
+    37	                   << "] = "
+    38	                   << value
+    39	                   << "."
+    40	                  << std::endl;
+    41	      }
+    42	      else {
+    43	         std::cout << "The list does NOT contain "
+    44	                   << value
+    45	                   << "."
+    46	                   << std::endl;
+    47	      }
+    48	   }
+    49	 
+    50	   return EXIT_SUCCESS;
+    51	}
+5% cat -n getPosition.h
+     1	// My ID#: 5727889
+     2	#ifndef GET_POSITION_
+     3	#define GET_POSITION_
+     4	
+     5	#include "ListInterface.h"
+     6	
+     7	/** Gets the position of the target in the passed list.
+     8	    @pre 'target' is in 'list'.
+     9	    @post None.
+    10	
+    11	    @param[in] list The list to search.
+    12	    @param[in] target The target to search for in 'list'.
+    13	
+    14	    @return If successful, the position in 'list' where 'target' can be found. Otherwise, the length of the list + 1. */
+    15	template <typename ItemType>
+    16	int getPosition(const ListInterface<ItemType>& list, const ItemType& target);
+    17	
+    18	#include "getPosition.cpp"
+    19	
+    20	#endif // GET_POSITION_
+6% cat -n getPosition.h[Kcpp
+     1	// My ID#: 5727889
+     2	template <typename ItemType>
+     3	int getPosition(const ListInterface<ItemType>& list, const ItemType& target) {
+     4	
+     5	  // Length of list
+     6	  int size = list.getLength();
+     7	
+     8	  // Iterate through length starting at 1 going to (inclusive) size.
+     9	  for (int i(1); i <= size; ++i) {
+    10	
+    11	    // If the entry at this position is the target, return this position.
+    12	    if (list.getEntry(i) == target) {
+    13	      return i;
+    14	    }
+    15	  }
+    16	
+    17	  // If it's made it here, there is no 'target' in 'list'; return a number higher than the size of the list to indicate so.
+    18	  return size + 1;
+    19	}
+7% cat -n Link[K[KstInterface.h 
+     1	/** @file
+     2	 *
+     3	 *  @course CS1521
+     4	 *  @section 1
+     5	 *  @term Spring 2021
+     6	 *
+     7	 *  ListInterface class template definition.
+     8	 *
+     9	 *  Adapted from pages 261-2 in Carrano 7e.
+    10	 *
+    11	 *  @author Frank M. Carrano
+    12	 *  @author Timothy Henry
+    13	 *  @author Steve Holtz
+    14	 *
+    15	 *  @date 18 Feb 2021
+    16	 *
+    17	 *  @version 7.0 */
+    18	
+    19	#ifndef LIST_INTERFACE_
+    20	#define LIST_INTERFACE_
+    21	
+    22	/** @class ListInterface ListInterface.h "ListInterface.h"
+    23	 *
+    24	 *  Definition of ListInterface class template. */
+    25	template <typename ItemType>
+    26	class ListInterface {
+    27	public:
+    28	   /** Destructor. */
+    29	   virtual ~ListInterface() = default;
+    30	
+    31	   /** Sees whether this list is empty.
+    32	    *
+    33	    *  @return True if this list is empty, or false if not. */
+    34	   virtual bool isEmpty() const = 0;
+    35	
+    36	   /** Gets the current number of entries in this list.
+    37	    *
+    38	    *  @return The integer number of entries in this list. */
+    39	   virtual int getLength() const = 0;
+    40	
+    41	   /** Inserts a new entry into this list at a given position.
+    42	    *
+    43	    *  @pre None.
+    44	    *
+    45	    *  @post If 1 <= newPosition <= getLength() + 1 and the insertion
+    46	    *        is successful, newEntry is stored at the given position
+    47	    *        in this list, other entries are renumbered accordingly.
+    48	    *
+    49	    *  @param newPosition The list position at which to insert
+    50	    *         newEntry.
+    51	    *
+    52	    *  @param newEntry The object to be added as a new entry.
+    53	    *
+    54	    *  @return True if insertion was successful, or false if not. */
+    55	   virtual bool insert(int newPosition,
+    56	                       const ItemType& newEntry) = 0;
+    57	
+    58	   /** Removes the entry at the given position from this list.
+    59	    *
+    60	    *  @pre None.
+    61	    *
+    62	    *  @post If 1 <= position <= getLength() and the removal is
+    63	    *        successful, the entry at the given position in this list
+    64	    *        is removed, other entries are renumbered accordingly.
+    65	    *
+    66	    *  @param position The list position of the entry to remove.
+    67	    *
+    68	    *  @return True if removal was successful, or false if not. */
+    69	   virtual bool remove(int position) = 0;
+    70	
+    71	   /** Removes all entries from this list.
+    72	    *
+    73	    *  @post List contains no entries; getLength() == 0. */
+    74	   virtual void clear() = 0;
+    75	
+    76	   /** Retrieves the entry at the given position in this list.
+    77	    *
+    78	    *  @pre 1 <= position <= getLength().
+    79	    *
+    80	    *  @post None.
+    81	    *
+    82	    *  @param position The position of the desired entry to
+    83	    *         retrieve.
+    84	    *
+    85	    *  @return The entry at the desired position in this list.
+    86	    *
+    87	    *  @throws PrecondViolatedExcep If position < 1 or position >
+    88	    *          getLength(). */
+    89	   virtual ItemType getEntry(int position) const = 0;
+    90	
+    91	   /** Replaces the entry at the given position in this list.
+    92	    *
+    93	    *  @pre 1 <= position <= getLength().
+    94	    *
+    95	    *  @post The entry at the given position is newEntry.
+    96	    *
+    97	    *  @param position The list position of the entry to replace.
+    98	    *
+    99	    *  @param newEntry The replacement entry.
+   100	    *
+   101	    *  @return The entry that has been replaced.
+   102	    *
+   103	    *  @throws PrecondViolatedExcep If position < 1 or position >
+   104	    *          getLength(). */
+   105	   virtual ItemType replace(int position,
+   106	                            const ItemType& newEntry) = 0;
+   107	};
+   108	
+   109	#endif
+8% cat -n ListInterface.h[K[K[K[K[K[K[K[K[K[K[K[K[K[K[KLinkedList.h
+     1	/** @file
+     2	 *
+     3	 *  @course CS1521
+     4	 *  @section 1
+     5	 *  @term Spring 2021
+     6	 *
+     7	 *  Header file for a pointer-based implementation of the ADT list.
+     8	 *
+     9	 *  Adapted from pages 273-274 in Carrano 7e.
+    10	 *
+    11	 *  @author Frank M. Carrano
+    12	 *  @author Timothy Henry
+    13	 *  @author Steve Holtz
+    14	 *
+    15	 *  @date 26 Feb 2021
+    16	 *
+    17	 *  @version 7.0 */
+    18	
+    19	#ifndef LINKED_LIST_
+    20	#define LINKED_LIST_
+    21	
+    22	#include "ListInterface.h"
+    23	#include "Node.h"
+    24	
+    25	/** @class LinkedList LinkedList.h "LinkedList.h"
+    26	 *
+    27	 *  Specification of a pointer-based ADT list. */
+    28	template <typename ItemType>
+    29	class LinkedList : public ListInterface<ItemType> {
+    30	private:
+    31	   using NodePtr = Node<ItemType>*;
+    32	
+    33	   NodePtr headPtr = nullptr;
+    34	
+    35	   int itemCount = 0;
+    36	
+    37	   /** Locates the node at the specified position in this list.
+    38	    *
+    39	    *  @pre 1 <= position <= itemCount
+    40	    *
+    41	    *  @post None.
+    42	    *
+    43	    *  @param position The desired position to locate.
+    44	    *
+    45	    *  @return A pointer to the position-th node in this list.
+    46	    */
+    47	   NodePtr getNodeAt(int position) const;
+    48	
+    49	public:
+    50	   LinkedList() = default;
+    51	
+    52	   LinkedList(const LinkedList<ItemType>& aList);
+    53	
+    54	   virtual ~LinkedList();
+    55	
+    56	   virtual bool isEmpty() const;
+    57	
+    58	   virtual int getLength() const;
+    59	
+    60	   virtual bool insert(int newPosition,
+    61	                       const ItemType& newEntry);
+    62	
+    63	   virtual bool remove(int position);
+    64	
+    65	   virtual void clear();
+    66	
+    67	   virtual ItemType getEntry(int position) const;
+    68	
+    69	   virtual ItemType replace(int position,
+    70	                            const ItemType& newEntry);
+    71	};
+    72	
+    73	#include "LinkedList.cpp"
+    74	
+    75	#endif
+9% cat -n LinkedList.h[Kcpp
+     1	/** @file
+     2	 *
+     3	 *  @course CS1521
+     4	 *  @section 1
+     5	 *  @term Spring 2021
+     6	 *
+     7	 *  Implementation file for a pointer-based implementation of the ADT
+     8	 *  list.
+     9	 *
+    10	 *  Adapted from pages 274-281 in Carrano 7e.
+    11	 *
+    12	 *  @author Frank M. Carrano
+    13	 *  @author Timothy Henry
+    14	 *  @author Steve Holtz
+    15	 *
+    16	 *  @date 26 Feb 2021
+    17	 *
+    18	 *  @version 7.0 */
+    19	
+    20	// #define NDEBUG
+    21	
+    22	#include <string>
+    23	#include <new>
+    24	
+    25	#include <cassert>
+    26	
+    27	#include "PrecondViolatedExcep.h"
+    28	
+    29	template <typename ItemType>
+    30	LinkedList<ItemType>::LinkedList(const LinkedList<ItemType>& aList) {
+    31	
+    32	   itemCount = 0; // Initialize an empty list (by def of isEmpty).
+    33	
+    34	   if (!aList.headPtr) {
+    35	      headPtr = nullptr;
+    36	   }
+    37	   else {
+    38	      NodePtr aListPtr(aList.headPtr);
+    39	
+    40	      try {
+    41	         headPtr = new Node<ItemType>(aListPtr->getItem() );
+    42	
+    43	         ++itemCount; // Increment after successful call to new
+    44	
+    45	         NodePtr thisListPtr(headPtr);
+    46	
+    47	         aListPtr = aListPtr->getNext();
+    48	
+    49	         while (aListPtr) {
+    50	            thisListPtr->setNext(new Node<ItemType>(aListPtr->getItem()) );
+    51	
+    52	            ++itemCount; // Increment after each successful call to new
+    53	
+    54	            thisListPtr = thisListPtr->getNext();
+    55	            aListPtr = aListPtr->getNext();
+    56	         }
+    57	      }
+    58	      catch (const std::bad_alloc&) {
+    59	         clear();
+    60	         throw;
+    61	      }
+    62	   }
+    63	}
+    64	
+    65	template <typename ItemType>
+    66	LinkedList<ItemType>::~LinkedList() {
+    67	
+    68	   clear();
+    69	}
+    70	
+    71	template <typename ItemType>
+    72	bool LinkedList<ItemType>::isEmpty() const {
+    73	
+    74	   return !itemCount;
+    75	}
+    76	
+    77	template <typename ItemType>
+    78	int LinkedList<ItemType>::getLength() const {
+    79	
+    80	   return itemCount;
+    81	}
+    82	
+    83	template <typename ItemType>
+    84	bool LinkedList<ItemType>::insert(int newPosition,
+    85	                                  const ItemType& newEntry) {
+    86	
+    87	   if (newPosition >= 1 && newPosition <= itemCount + 1) {
+    88	      try {
+    89	         if (newPosition == 1) {
+    90	            headPtr = new Node<ItemType>(newEntry,
+    91	                                         headPtr);
+    92	         }
+    93	         else {
+    94	            NodePtr prevPtr(getNodeAt(newPosition - 1) );
+    95	
+    96	            prevPtr->setNext(new Node<ItemType>(newEntry,
+    97	                                                prevPtr->getNext()) );
+    98	         }
+    99	
+   100	         ++itemCount;
+   101	
+   102	         return true;
+   103	      }
+   104	      catch (const std::bad_alloc&) {
+   105	         return false;
+   106	      }
+   107	   }
+   108	
+   109	   return false;
+   110	}
+   111	
+   112	template <typename ItemType>
+   113	bool LinkedList<ItemType>::remove(int position) {
+   114	
+   115	   if (position >= 1 && position <= itemCount) {
+   116	      NodePtr nodeToDeletePtr(nullptr);
+   117	
+   118	      if (position == 1) {
+   119	         nodeToDeletePtr = headPtr;
+   120	         headPtr = headPtr->getNext();
+   121	      }
+   122	      else {
+   123	         NodePtr prevPtr(getNodeAt(position - 1) );
+   124	
+   125	         nodeToDeletePtr = prevPtr->getNext();
+   126	
+   127	         prevPtr->setNext(nodeToDeletePtr->getNext() );
+   128	      }
+   129	
+   130	      delete nodeToDeletePtr;
+   131	
+   132	      --itemCount;
+   133	
+   134	      return true;
+   135	   }
+   136	
+   137	   return false;
+   138	}
+   139	
+   140	template <typename ItemType>
+   141	void LinkedList<ItemType>::clear() {
+   142	
+   143	   while (!isEmpty() ) {
+   144	      remove(1);
+   145	   }
+   146	}
+   147	
+   148	template <typename ItemType>
+   149	ItemType LinkedList<ItemType>::getEntry(int position) const {
+   150	
+   151	   if (position >= 1 && position <= itemCount) {
+   152	      NodePtr nodePtr(getNodeAt(position) );
+   153	
+   154	      return nodePtr->getItem();
+   155	   }
+   156	
+   157	   std::string message("LinkedList::getEntry() called with an empty ");
+   158	   message += "list or an invalid position.";
+   159	
+   160	   throw PrecondViolatedExcep(message);
+   161	}
+   162	
+   163	template <typename ItemType>
+   164	ItemType LinkedList<ItemType>::replace(int position,
+   165	                                       const ItemType& newEntry) {
+   166	
+   167	   if (position >= 1 && position <= itemCount) {
+   168	      NodePtr nodePtr(getNodeAt(position) );
+   169	
+   170	      ItemType oldEntry(nodePtr->getItem() );
+   171	
+   172	      nodePtr->setItem(newEntry);
+   173	
+   174	      return oldEntry;
+   175	   }
+   176	
+   177	   std::string message("LinkedList::replace() called with an empty ");
+   178	   message += "list or an invalid position.";
+   179	
+   180	   throw PrecondViolatedExcep(message);
+   181	}
+   182	
+   183	template <typename ItemType>
+   184	Node<ItemType>*
+   185	LinkedList<ItemType>::getNodeAt(int position) const {
+   186	
+   187	   assert(position >= 1 && position <= itemCount);
+   188	
+   189	   NodePtr curPtr(headPtr);
+   190	
+   191	   for (int skip(1); skip < position; ++skip) {
+   192	      curPtr = curPtr->getNext();
+   193	   }
+   194	
+   195	   return curPtr;
+   196	}
+10% cat -n LinkedList.cpp[K[K[K[K[K[K[K[K[K[K[K[K[K[KNode.h
+     1	/** @file
+     2	 *
+     3	 *  @course CS1521
+     4	 *  @section 1
+     5	 *  @term Spring 2021
+     6	 *
+     7	 *  Header file for a node in the linked implementation of the ADT
+     8	 *  bag.
+     9	 *
+    10	 *  Adapted from pages 136-137 in Carrano 7e.
+    11	 *
+    12	 *  @author Frank M. Carrano
+    13	 *  @author Timothy Henry
+    14	 *  @author Steve Holtz
+    15	 *
+    16	 *  @date 04 Feb 2021
+    17	 *
+    18	 *  @version 7.0 */
+    19	
+    20	#ifndef NODE_
+    21	#define NODE_
+    22	
+    23	template <typename ItemType>
+    24	class Node {
+    25	private:
+    26	   ItemType item;
+    27	   Node<ItemType>* next = nullptr;
+    28	
+    29	public:
+    30	   Node() = default;
+    31	
+    32	   Node(const ItemType& anItem,
+    33	        Node<ItemType>* nextNodePtr = nullptr);
+    34	
+    35	   virtual ~Node() = default;
+    36	
+    37	   void setItem(const ItemType& anItem);
+    38	   void setNext(Node<ItemType>* nextNodePtr);
+    39	
+    40	   ItemType getItem() const;
+    41	   Node<ItemType>* getNext() const;
+    42	};
+    43	
+    44	#include "Node.cpp"
+    45	
+    46	#endif
+11% cat -n Node.h[Kcpp
+     1	/** @file
+     2	 *
+     3	 *  @course CS1521
+     4	 *  @section 1
+     5	 *  @term Spring 2021
+     6	 *
+     7	 *  Implementation file for a node in the linked implementation of the
+     8	 *  ADT bag.
+     9	 *
+    10	 *  Adapted from page 137 in Carrano 7e.
+    11	 *
+    12	 *  @author Frank M. Carrano
+    13	 *  @author Timothy Henry
+    14	 *  @author Steve Holtz
+    15	 *
+    16	 *  @date 04 Feb 2021
+    17	 *
+    18	 *  @version 7.0 */
+    19	
+    20	template <typename ItemType>
+    21	Node<ItemType>::Node(const ItemType& anItem,
+    22	                     Node<ItemType>* nextNodePtr)
+    23	   : item(anItem),
+    24	     next(nextNodePtr) {
+    25	}
+    26	
+    27	template <typename ItemType>
+    28	void Node<ItemType>::setItem(const ItemType& anItem) {
+    29	
+    30	   item = anItem;
+    31	}
+    32	
+    33	template <typename ItemType>
+    34	void Node<ItemType>::setNext(Node<ItemType>* nextNodePtr) {
+    35	
+    36	   next = nextNodePtr;
+    37	}
+    38	
+    39	template <typename ItemType>
+    40	ItemType Node<ItemType>::getItem() const {
+    41	
+    42	   return item;
+    43	}
+    44	
+    45	template <typename ItemType>
+    46	Node<ItemType>* Node<ItemType>::getNext() const {
+    47	
+    48	   return next;
+    49	}
+12% cat -n Node.cpp[K[K[K[K[K[K[K[KPrecon
+PrecondViolatedExcep.cpp* PrecondViolatedExcep.h*   
+12% cat -n PrecondViolatedExcep.h
+     1	/** @file
+     2	 *
+     3	 *  @course CS1521
+     4	 *  @section 1
+     5	 *  @term Spring 2021
+     6	 *
+     7	 *  Header file for an object thrown on violation of precondition.
+     8	 *
+     9	 *  Adapted from page 250 in Carrano 7e.
+    10	 *
+    11	 *  @author Frank M. Carrano
+    12	 *  @author Timothy Henry
+    13	 *  @author Steve Holtz
+    14	 *
+    15	 *  @date 18 Feb 2021
+    16	 *
+    17	 *  @version 7.0 */
+    18	
+    19	#ifndef PRECOND_VIOLATED_EXCEP_
+    20	#define PRECOND_VIOLATED_EXCEP_
+    21	
+    22	#include <stdexcept>
+    23	#include <string>
+    24	
+    25	/** @class PrecondViolatedExcep PrecondViolatedExcep.h "PrecondViolatedExcep.h"
+    26	 *
+    27	 *  Specification for an object thrown on violation of precondition. */
+    28	class PrecondViolatedExcep : public std::logic_error {
+    29	public:
+    30	   explicit PrecondViolatedExcep(const std::string& message = "");
+    31	
+    32	   virtual ~PrecondViolatedExcep() noexcept = default;
+    33	};
+    34	
+    35	#endif
+13% cat -n PrecondViolatedExcep.h[Kcpp
+     1	/** @file
+     2	 *
+     3	 *  @course CS1521
+     4	 *  @section 1
+     5	 *  @term Spring 2021
+     6	 *
+     7	 *  Implementation file for an object thrown on violation of
+     8	 *  precondition.
+     9	 *
+    10	 *  Adapted from page 250 in Carrano 7e.
+    11	 *
+    12	 *  @author Frank M. Carrano
+    13	 *  @author Timothy Henry
+    14	 *  @author Steve Holtz
+    15	 *
+    16	 *  @date 18 Feb 2021
+    17	 *
+    18	 *  @version 7.0 */
+    19	
+    20	#include <stdexcept>
+    21	#include <string>
+    22	
+    23	#include "PrecondViolatedExcep.h"
+    24	
+    25	PrecondViolatedExcep::PrecondViolatedExcep(const std::string& message)
+    26	   : std::logic_error(message) {
+    27	}
+14% git --no-pager log --no-color
+commit 315b1eeb26a88bb7ace6b23fc21cdec649a3b77d (HEAD -> master)
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 2 14:37:58 2021 -0600
+
+    Everything working correctly. Verified using values.dat from lab4 page. Added ID to top of every turnin file.
+
+commit 8452f88b075fa38ee347619aab25fe8cd8b39975
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 2 14:34:18 2021 -0600
+
+    Corrected CMakeLists.txt to properly build. Commented implementation of getPosition. Made a gitignore to ignore the out of source build directory. Made contract in the getPosition.h file.
+
+commit 127d4e0d019ed8630490a87aca90ad8d008425d1
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 2 14:24:48 2021 -0600
+
+    Made cmakelists.
+
+commit e9ab7496535a179fb7bd8eaff9019c7846fc5fb2
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 2 14:22:14 2021 -0600
+
+    Made preliminary implementation of getPosition.
+
+commit 72f387e42dcaea04f530622a6e2d3b6e9013eee6
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 2 14:17:43 2021 -0600
+
+    Added all default files to the working tree. Made header file and implementation file for getPosition function.
+15% cd build/
+16% ./lab4 < test/values.dat 
+./lab4: Command not found.
+17% make
+[ 33%] [32mBuilding CXX object CMakeFiles/lab4.dir/driver.cpp.o[0m
+[ 66%] [32mBuilding CXX object CMakeFiles/lab4.dir/PrecondViolatedExcep.cpp.o[0m
+[100%] [32m[1mLinking CXX executable lab4[0m
+[100%] Built target lab4
+18% make./lab4 < test/values.dat
+The list does NOT contain 8.
+list[3] = 9.
+The list does NOT contain 6.
+list[2] = 3.
+list[5] = 5.
+The list does NOT contain 7.
+The list does NOT contain 4.
+list[1] = 0.
+19% exit
+exit
+
+Script done on 2021-03-02 14:44:15-0600

@@ -1,0 +1,84 @@
+Script started on 2021-01-19 15:40:32-0600
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab1/src[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab1/src[00m$ pwd
+/home/rholm/cs1521/labs/lab1/src
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab1/src[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab1/src[00m$ ls -lR ~/
+/home/rholm/:
+total 8
+drwxr-xr-x 3 rholm rholm 4096 Jan 19 15:06 [0m[01;34mcs1521[0m
+drwxr-xr-x 2 rholm rholm 4096 Jan 18 15:12 [01;34mopengl[0m
+
+/home/rholm/cs1521:
+total 4
+drwxr-xr-x 3 rholm rholm 4096 Jan 19 15:06 [01;34mlabs[0m
+
+/home/rholm/cs1521/labs:
+total 4
+drwxr-xr-x 3 rholm rholm 4096 Jan 19 15:31 [01;34mlab1[0m
+
+/home/rholm/cs1521/labs/lab1:
+total 4
+drwxr-xr-x 3 rholm rholm 4096 Jan 19 15:40 [01;34msrc[0m
+
+/home/rholm/cs1521/labs/lab1/src:
+total 40
+-rw-r--r-- 1 rholm rholm  293 Jan 19 15:34 CMakeLists.txt
+-rw-r--r-- 1 rholm rholm  287 Jan 19 15:32 CMakeLists.txt~
+-rw-r--r-- 1 rholm rholm 2099 Jan 19 15:09 board.cpp
+-rw-r--r-- 1 rholm rholm 2394 Jan 19 15:09 board.h
+drwxr-xr-x 2 rholm rholm 4096 Jan 19 15:38 [01;34mbuild[0m
+-rw-r--r-- 1 rholm rholm 2272 Jan 19 15:09 game.cpp
+-rw-r--r-- 1 rholm rholm 1787 Jan 19 15:09 game.h
+-rw-r--r-- 1 rholm rholm  460 Jan 19 15:09 main.cpp
+-rw-r--r-- 1 rholm rholm  786 Jan 19 15:09 player.cpp
+-rw-r--r-- 1 rholm rholm 1197 Jan 19 15:09 player.h
+-rw-r--r-- 1 rholm rholm    0 Jan 19 15:40 typescript.txt
+
+/home/rholm/cs1521/labs/lab1/src/build:
+total 0
+
+/home/rholm/opengl:
+total 24
+-rwxr-xr-x 1 rholm rholm 13208 Jan 18 15:12 [01;32mtest[0m
+-rw-r--r-- 1 rholm rholm  1484 Jan 18 15:12 test.cpp
+-rw-r--r-- 1 rholm rholm  1477 Jan 18 14:56 test.cpp~
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab1/src[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab1/src[00m$ cat -n CMakeLists.txt
+     1	cmake_minimum_required(VERSION 3.1.0)
+     2	
+     3	project("Tic Tac Toe"
+     4	  LANGUAGES CXX)
+     5	
+     6	add_compile_options(-Wall -Wextra -Wpedantic)
+     7	
+     8	set(CMAKE_CXX_STANDARD 14)
+     9	set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    10	set(CMAKE_CXX_EXTENSIONS OFF)
+    11	
+    12	add_executable(tictactoe
+    13	  main.cpp
+    14	  game.cpp
+    15	  board.cpp
+    16	  player.cpp)
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab1/src[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab1/src[00m$ cd build
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab1/src/build[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab1/src/build[00m$ cmake ..
+-- The CXX compiler identification is GNU 7.5.0
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/rholm/cs1521/labs/lab1/src/build
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab1/src/build[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab1/src/build[00m$ make
+[35m[1mScanning dependencies of target tictactoe[0m
+[ 20%] [32mBuilding CXX object CMakeFiles/tictactoe.dir/main.cpp.o[0m
+[ 40%] [32mBuilding CXX object CMakeFiles/tictactoe.dir/game.cpp.o[0m
+[ 60%] [32mBuilding CXX object CMakeFiles/tictactoe.dir/board.cpp.o[0m
+[ 80%] [32mBuilding CXX object CMakeFiles/tictactoe.dir/player.cpp.o[0m
+[100%] [32m[1mLinking CXX executable tictactoe[0m
+[100%] Built target tictactoe
+]0;rholm@REECE-ROG: ~/cs1521/labs/lab1/src/build[01;32mrholm@REECE-ROG[00m:[01;34m~/cs1521/labs/lab1/src/build[00m$ exit
+exit
+
+Script done on 2021-01-19 15:41:28-0600

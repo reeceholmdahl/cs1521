@@ -1,0 +1,659 @@
+Script started on 2021-03-16 14:12:01-0500
+1% pwd
+/home/csugrads/holmd353/labs/lab5
+2% ls -l
+total 52
+-rw------- 1 holmd353 student 3181 Mar 16 14:10 ArrayList.cpp
+-rw------- 1 holmd353 student 1252 Mar 16 14:10 ArrayList.h
+drwxr-xr-x 3 holmd353 student 4096 Mar 16 14:11 build
+-rw------- 1 holmd353 student  366 Mar 16 14:10 CMakeLists.txt
+-rw------- 1 holmd353 student 6472 Mar 16 14:10 LinkedList.cpp
+-rw------- 1 holmd353 student 1622 Mar 16 14:10 LinkedList.h
+-rw------- 1 holmd353 student 3251 Mar 16 14:10 ListInterface.h
+-rw------- 1 holmd353 student 2461 Mar 16 14:10 main.cpp
+-rwx------ 1 holmd353 student  914 Mar 16 14:10 Node.cpp
+-rwx------ 1 holmd353 student  789 Mar 16 14:10 Node.h
+-rwx------ 1 holmd353 student  507 Mar 16 14:10 PrecondViolatedExcep.cpp
+-rwx------ 1 holmd353 student  771 Mar 16 14:10 PrecondViolatedExcep.h
+-rw------- 1 holmd353 student    0 Mar 16 14:12 typescript.txt
+3% cat -n CMakeLists.txt 
+     1	# My ID: 5727889
+     2	cmake_minimum_required(VERSION 3.10)
+     3	
+     4	project("Lab 5: Sort"
+     5	  VERSION 0.0.0
+     6	  DESCRIPTION "Learning to build an algorithm to sort a list interface."
+     7	  LANGUAGES CXX)
+     8	
+     9	add_compile_options(-Wall -Wextra -Wpedantic)
+    10	
+    11	set(CXX_STANDARD 17)
+    12	set(CXX_STANDARD_REQUIRED ON)
+    13	set(CXX_EXTENSIONS OFF)
+    14	
+    15	add_executable(lab5
+    16	  main.cpp
+    17	  PrecondViolatedExcep.cpp)
+4% cat -n main.cpp 
+     1	#include <iostream>
+     2	
+     3	#include "ArrayList.h"
+     4	#include "LinkedList.h"
+     5	
+     6	void displayList(ListInterface<int>* listPtr) {
+     7	
+     8	   if (!listPtr) {
+     9	      return;
+    10	   }
+    11	
+    12	   std::cout << "The list contains "
+    13	             << listPtr->getLength()
+    14	             << " items:"
+    15	             << std::endl;
+    16	
+    17	   for (int pos(1); pos <= listPtr->getLength(); ++pos) {
+    18	      std::cout << "list["
+    19	                << pos
+    20	                << "] = "
+    21	                << listPtr->getEntry(pos)
+    22	                << "\n";
+    23	   }
+    24	
+    25	   std::cout << std::endl;
+    26	}
+    27	
+    28	void fillList(ListInterface<int>* listPtr) {
+    29	
+    30	   if (!listPtr) {
+    31	      return;
+    32	   }
+    33	
+    34	   listPtr->insert(1, 2);
+    35	   listPtr->insert(2, 7);
+    36	   listPtr->insert(3, 9);
+    37	   listPtr->insert(4, 6);
+    38	   listPtr->insert(5, 8);
+    39	   listPtr->insert(5, 0);
+    40	   listPtr->insert(4, 3);
+    41	   listPtr->insert(3, 5);
+    42	   listPtr->insert(2, 1);
+    43	   listPtr->insert(1, 4);
+    44	}
+    45	
+    46	int main() {
+    47	
+    48	   ListInterface<int>* listPtr(nullptr);
+    49	
+    50	   char userChoice;
+    51	
+    52	   std::cout << "Enter 'A' the test the array-based list"
+    53	             << std::endl
+    54	             << "or 'L' to test the linked-chain based list"
+    55	             << std::endl
+    56	             << "or 'Q' to quit\n"
+    57	             << std::endl
+    58	             << "Choice: ";
+    59	
+    60	   std::cin >> userChoice;
+    61	
+    62	   while (userChoice != 'Q' && userChoice != 'q') {
+    63	      if (userChoice == 'A' || userChoice == 'a') {
+    64	         listPtr = new ArrayList<int>();
+    65	         std::cout << "Testing with ArrayList ..."
+    66	                   << std::endl;
+    67	      }
+    68	      else {
+    69	         listPtr = new LinkedList<int>();
+    70	         std::cout << "Testing with LinkedList ..."
+    71	                   << std::endl;
+    72	      }
+    73	
+    74	      // Fill the list with a permutation of 0-9:
+    75	      fillList(listPtr);
+    76	
+    77	      // Display the initial (unsorted) list:
+    78	      displayList(listPtr);
+    79	
+    80	      std::cout << "Sorting the list ... ";
+    81	      listPtr->sort();
+    82	      std::cout << "Done.\n"
+    83	                << std::endl;
+    84	
+    85	      // Display the sorted list:
+    86	      displayList(listPtr);
+    87	
+    88	      delete listPtr;
+    89	      listPtr = nullptr;
+    90	
+    91	      std::cout << "All done with that test!"
+    92	                << std::endl
+    93	                << std::endl;
+    94	
+    95	      std::cout << "Enter 'A' the test the array-based list"
+    96	                << std::endl
+    97	                << "or 'L' to test the linked-chain based list"
+    98	                << std::endl
+    99	                << "or 'Q' to quit\n"
+   100	                << std::endl
+   101	                << "Choice: ";
+   102	
+   103	      std::cin >> userChoice;
+   104	   }
+   105	
+   106	   return EXIT_SUCCESS;
+   107	}
+5% cat -n Linje[K[KkedL[K[K[K[K[K[K[KArrayList.cpp
+     1	// My ID: 5727889
+     2	
+     3	/** @file
+     4	 *
+     5	 *  @course CS1521
+     6	 *  @section 1
+     7	 *  @term Spring 2021
+     8	 *
+     9	 *  Implementation file for an array-based implementation of the ADT
+    10	 *  list.
+    11	 *
+    12	 *  Adapted from pages 268-272 in Carrano 7e.
+    13	 *
+    14	 *  @author Frank M. Carrano
+    15	 *  @author Timothy Henry
+    16	 *  @author Steve Holtz
+    17	 *
+    18	 *  @date 4 Mar 2021
+    19	 *
+    20	 *  @version 7.0 */
+    21	
+    22	#include <string>
+    23	#include <utility>
+    24	
+    25	#include "PrecondViolatedExcep.h"
+    26	
+    27	template <typename ItemType>
+    28	bool ArrayList<ItemType>::isEmpty() const {
+    29	
+    30	   return !itemCount;
+    31	}
+    32	
+    33	template <typename ItemType>
+    34	int ArrayList<ItemType>::getLength() const {
+    35	
+    36	   return itemCount;
+    37	}
+    38	
+    39	template <typename ItemType>
+    40	bool ArrayList<ItemType>::insert(int newPosition,
+    41	                                 const ItemType& newEntry) {
+    42	
+    43	   if (newPosition >= 1 && newPosition <= itemCount + 1 &&
+    44	       itemCount < DEFAULT_CAPACITY) {
+    45	      // Make room for 'newEntry' by shifting all entries at positions
+    46	      // >= 'newPosition' toward the end of the array:
+    47	      for (int pos(itemCount); pos >= newPosition; --pos) {
+    48	         items[pos] = items[pos - 1];
+    49	      }
+    50	
+    51	      // Insert new entry:
+    52	      items[newPosition - 1] = newEntry;
+    53	
+    54	      ++itemCount;
+    55	
+    56	      return true;
+    57	   }
+    58	
+    59	   return false;
+    60	}
+    61	
+    62	template <typename ItemType>
+    63	bool ArrayList<ItemType>::remove(int position) {
+    64	
+    65	   if (position >= 1 && position <= itemCount) {
+    66	      // Remove entry by shifting all entries after the one at
+    67	      // position toward the beginning of the array:
+    68	      for (int pos(position); pos < itemCount; ++pos) {
+    69	         items[pos - 1] = items[pos];
+    70	      }
+    71	      --itemCount;
+    72	
+    73	      return true;
+    74	   }
+    75	
+    76	   return false;
+    77	}
+    78	
+    79	template <typename ItemType>
+    80	void ArrayList<ItemType>::clear() {
+    81	
+    82	   itemCount = 0;
+    83	}
+    84	
+    85	template <typename ItemType>
+    86	ItemType ArrayList<ItemType>::getEntry(int position) const {
+    87	
+    88	   if (position >= 1 && position <= itemCount) {
+    89	      return items[position - 1];
+    90	   }
+    91	
+    92	   std::string message("ArrayList::getEntry() called with an empty ");
+    93	   message += "list or an invalid position.";
+    94	
+    95	   throw PrecondViolatedExcep(message);
+    96	}
+    97	
+    98	template <typename ItemType>
+    99	ItemType ArrayList<ItemType>::replace(int position,
+   100	                                      const ItemType& newEntry) {
+   101	
+   102	   if (position >= 1 && position <= itemCount) {
+   103	      ItemType oldEntry(items[position - 1]);
+   104	
+   105	      items[position - 1] = newEntry;
+   106	
+   107	      return oldEntry;
+   108	   }
+   109	
+   110	   std::string message("ArrayList::replace() called with an empty ");
+   111	   message += "list or an invalid position.";
+   112	
+   113	   throw PrecondViolatedExcep(message);
+   114	}
+   115	
+   116	template <typename ItemType>
+   117	void ArrayList<ItemType>::sort() {
+   118	  
+   119	  // Sorted array: [0, unsorted), Unsorted array [unsorted, itemCount - 1]
+   120	  for (int unsorted(1); unsorted < itemCount; ++unsorted) {
+   121	
+   122	    // The item to insert at the searched location
+   123	    ItemType toInsert(items[unsorted]);
+   124	
+   125	    // Location in the sorted array starting at rightmost index
+   126	    int loc(unsorted);
+   127	    while (loc > 0 && items[loc - 1] > toInsert) {
+   128	
+   129	      // Shift item at [loc - 1] to the right 1
+   130	      items[loc] = items[loc - 1];
+   131	      
+   132	      loc--;
+   133	    }
+   134	
+   135	    // At this point, loc is at the right spot to insert the item
+   136	    items[loc] = toInsert;
+   137	  }
+   138	}
+   139	
+6% cat -n ArrayList.cpp[K[K[K[K[K[K[K[K[K[K[K[K[KLinkedList.cpp
+     1	// My ID: 5727889
+     2	
+     3	/** @file
+     4	 *
+     5	 *  @course CS1521
+     6	 *  @section 1
+     7	 *  @term Spring 2021
+     8	 *
+     9	 *  Implementation file for a pointer-based implementation of the ADT
+    10	 *  list.
+    11	 *
+    12	 *  Adapted from pages 274-281 in Carrano 7e.
+    13	 *
+    14	 *  @author Frank M. Carrano
+    15	 *  @author Timothy Henry
+    16	 *  @author Steve Holtz
+    17	 *
+    18	 *  @date 4 Mar 2021
+    19	 *
+    20	 *  @version 7.0 */
+    21	
+    22	// #define NDEBUG
+    23	
+    24	#include <string>
+    25	#include <new>
+    26	
+    27	#include <cassert>
+    28	
+    29	#include "PrecondViolatedExcep.h"
+    30	
+    31	template <typename ItemType>
+    32	LinkedList<ItemType>::LinkedList(const LinkedList<ItemType>& aList) {
+    33	
+    34	   itemCount = 0; // Initialize an empty list (by def of isEmpty).
+    35	
+    36	   if (!aList.headPtr) {
+    37	      headPtr = nullptr;
+    38	   }
+    39	   else {
+    40	      NodePtr aListPtr(aList.headPtr);
+    41	
+    42	      try {
+    43	         headPtr = new Node<ItemType>(aListPtr->getItem() );
+    44	
+    45	         ++itemCount; // Increment after successful call to new
+    46	
+    47	         NodePtr thisListPtr(headPtr);
+    48	
+    49	         aListPtr = aListPtr->getNext();
+    50	
+    51	         while (aListPtr) {
+    52	            thisListPtr->setNext(new Node<ItemType>(aListPtr->getItem()) );
+    53	
+    54	            ++itemCount; // Increment after each successful call to new
+    55	
+    56	            thisListPtr = thisListPtr->getNext();
+    57	            aListPtr = aListPtr->getNext();
+    58	         }
+    59	      }
+    60	      catch (const std::bad_alloc&) {
+    61	         clear();
+    62	         throw;
+    63	      }
+    64	   }
+    65	}
+    66	
+    67	template <typename ItemType>
+    68	LinkedList<ItemType>::~LinkedList() {
+    69	
+    70	   clear();
+    71	}
+    72	
+    73	template <typename ItemType>
+    74	bool LinkedList<ItemType>::isEmpty() const {
+    75	
+    76	   return !itemCount;
+    77	}
+    78	
+    79	template <typename ItemType>
+    80	int LinkedList<ItemType>::getLength() const {
+    81	
+    82	   return itemCount;
+    83	}
+    84	
+    85	template <typename ItemType>
+    86	bool LinkedList<ItemType>::insert(int newPosition,
+    87	                                  const ItemType& newEntry) {
+    88	
+    89	   if (newPosition >= 1 && newPosition <= itemCount + 1) {
+    90	      try {
+    91	         if (newPosition == 1) {
+    92	            headPtr = new Node<ItemType>(newEntry,
+    93	                                         headPtr);
+    94	         }
+    95	         else {
+    96	            NodePtr prevPtr(getNodeAt(newPosition - 1) );
+    97	
+    98	            prevPtr->setNext(new Node<ItemType>(newEntry,
+    99	                                                prevPtr->getNext()) );
+   100	         }
+   101	
+   102	         ++itemCount;
+   103	
+   104	         return true;
+   105	      }
+   106	      catch (const std::bad_alloc&) {
+   107	         return false;
+   108	      }
+   109	   }
+   110	
+   111	   return false;
+   112	}
+   113	
+   114	template <typename ItemType>
+   115	bool LinkedList<ItemType>::remove(int position) {
+   116	
+   117	   if (position >= 1 && position <= itemCount) {
+   118	      NodePtr nodeToDeletePtr(nullptr);
+   119	
+   120	      if (position == 1) {
+   121	         nodeToDeletePtr = headPtr;
+   122	         headPtr = headPtr->getNext();
+   123	      }
+   124	      else {
+   125	         NodePtr prevPtr(getNodeAt(position - 1) );
+   126	
+   127	         nodeToDeletePtr = prevPtr->getNext();
+   128	
+   129	         prevPtr->setNext(nodeToDeletePtr->getNext() );
+   130	      }
+   131	
+   132	      delete nodeToDeletePtr;
+   133	
+   134	      --itemCount;
+   135	
+   136	      return true;
+   137	   }
+   138	
+   139	   return false;
+   140	}
+   141	
+   142	template <typename ItemType>
+   143	void LinkedList<ItemType>::clear() {
+   144	
+   145	   while (!isEmpty() ) {
+   146	      remove(1);
+   147	   }
+   148	}
+   149	
+   150	template <typename ItemType>
+   151	ItemType LinkedList<ItemType>::getEntry(int position) const {
+   152	
+   153	   if (position >= 1 && position <= itemCount) {
+   154	      NodePtr nodePtr(getNodeAt(position) );
+   155	
+   156	      return nodePtr->getItem();
+   157	   }
+   158	
+   159	   std::string message("LinkedList::getEntry() called with an empty ");
+   160	   message += "list or an invalid position.";
+   161	
+   162	   throw PrecondViolatedExcep(message);
+   163	}
+   164	
+   165	template <typename ItemType>
+   166	ItemType LinkedList<ItemType>::replace(int position,
+   167	                                       const ItemType& newEntry) {
+   168	
+   169	   if (position >= 1 && position <= itemCount) {
+   170	      NodePtr nodePtr(getNodeAt(position) );
+   171	
+   172	      ItemType oldEntry(nodePtr->getItem() );
+   173	
+   174	      nodePtr->setItem(newEntry);
+   175	
+   176	      return oldEntry;
+   177	   }
+   178	
+   179	   std::string message("LinkedList::replace() called with an empty ");
+   180	   message += "list or an invalid position.";
+   181	
+   182	   throw PrecondViolatedExcep(message);
+   183	}
+   184	
+   185	template <typename ItemType>
+   186	Node<ItemType>*
+   187	LinkedList<ItemType>::getNodeAt(int position) const {
+   188	
+   189	   assert(position >= 1 && position <= itemCount);
+   190	
+   191	   NodePtr curPtr(headPtr);
+   192	
+   193	   for (int skip(1); skip < position; ++skip) {
+   194	      curPtr = curPtr->getNext();
+   195	   }
+   196	
+   197	   return curPtr;
+   198	}
+   199	
+   200	template <typename ItemType>
+   201	void LinkedList<ItemType>::sort() {
+   202	
+   203	  /** Keep a previous pointer in order to reduce total number of instructions.
+   204	      I'm not sure if increasing the complexity (algorithm complexity, not code complexity) of sort is worth the reduction in instructions.
+   205	      I made and tested 3 different versions of the linked list sort, and using a record of the previous pointer, I was able to reduce the amount of loops from 59, to 45, to 37 with this final version.
+   206	      I also considered constructing a reverse chain in order to traverse the chain similarly to how I could with an array, but I think the losses in algorithm complexity were not worth trying that.
+   207	      Finally, I also considered using the member functions insert and remove, but that would have been an unnecessarily large amount of nested for loops and decreased the algorithm's efficiency. */
+   208	  NodePtr prevPtr(headPtr);
+   209	
+   210	  // Traverse through the chain, starting at the second pointer: the first is already sorted.
+   211	  for (NodePtr unsortedPtr(headPtr->getNext() ); unsortedPtr; unsortedPtr = unsortedPtr->getNext() ) {
+   212	
+   213	    // The item to check against the sorted portion of the chain
+   214	    ItemType toInsert(unsortedPtr->getItem() );
+   215	
+   216	    // Inner loop: checking against the sorted portion of the chain, skipping if the unsorted pointer is greater than the previous pointer (which is sorted)
+   217	    NodePtr sortedPtr(headPtr);
+   218	    while (sortedPtr != unsortedPtr && unsortedPtr->getItem() < prevPtr->getItem() ) {
+   219	
+   220	      // The current pointer in the sorted portion of the chain
+   221	      ItemType sorted = sortedPtr->getItem();
+   222	
+   223	      // If the item to sort is less than this, set the current pointer to the unsorted (to be inserted) pointer's item, then swap the item to be inserted to the one just removed.
+   224	      if (toInsert < sorted) {
+   225		sortedPtr->setItem(toInsert);
+   226		toInsert = sorted;
+   227	      }
+   228	
+   229	      // Iterate through to the next sorted pointer.
+   230	      sortedPtr = sortedPtr->getNext();
+   231	    }
+   232	
+   233	    // Now that we've gotten to the end of the sorted portion, set the unsorted pointer's item to whatever needs to be finally inserted.
+   234	    unsortedPtr->setItem(toInsert);
+   235	
+   236	    // Increment the previous pointer (it's one behind unsortedPtr)
+   237	    prevPtr = prevPtr->getNext();
+   238	  }
+   239	}
+7% echo No other files were edited, I didn't include them because I don[K[K[K[K[K[K[K[K[K[K[Kfor [K[K[K[Km in an effort to make a smaller t[Ks[Ktypescript file[4Gecho [1@![1@![1@![1@ 
+Unmatched '''.
+8% echo cat -n LinkedList.cpp! No other files were edited, I didn't include them in an effort to make a smaller typescript file[4Gecho cat -n LinkedList.cpp![P[P[P[P[P[P[P[P[P[P[P[P[P[P[P[P[P[P[P[P[P[P[P[1@![P [1@!
+No: Event not found.
+9% echo other files were edited, I didn't include them in an effort to make a smaller typescript file[4Gecho other fil[1@No[1@o[1@ 
+Unmatched '''.
+10% echo No other files were edited, I didn't include them in an effort to make a smaller typescript filet[P[P [1@ [1@n[P[P[P[P [1@ [1@t[P[P[1@d [1@ [1@n[1@o[1@t
+No other files were edited, I did not include them in an effort to make a smaller typescript file
+11% %[Kgit --no-pager log --no-color
+commit cce14eb8dedfea0ef986a11de372656620b8dfb5 (HEAD -> master)
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 16 14:10:22 2021 -0500
+
+    Added my ID to top of files I edited
+
+commit 1311835f0b8b9f6d16c20b53673b503cea92e1e9
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 16 14:09:16 2021 -0500
+
+    Finished testing
+
+commit bd2709900309816ee7fa5950b05e143f0e135047
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 16 14:03:18 2021 -0500
+
+    LinkedList sort is working as intended. Left a lot of comments to explain my thought process through the design. I'd appreciate if you could leave any tips to improve my code. Thanks.
+
+commit 2b497a027164e5b476f49dd53a796c073bffdcd2
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 16 11:15:15 2021 -0500
+
+    Finished the cmake lists and built project successfully. Implemented insertion sort in ArrayList. Insertion sort works as intended and the sort of 10 integers took 19 'instructions'.
+
+commit 549aaf63d5d25e94303d956fd4c90115ef260dcb
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Mon Mar 15 11:55:42 2021 -0500
+
+    Began cmakes list file and made (and ignored) out of source build dir.
+
+commit 852cad73c62002b8e57f4bb213c89c211c5d45fa
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Mon Mar 15 11:51:50 2021 -0500
+
+    Added the extra base files from lecture resources
+
+commit 16f5a1f3de7fa663f588b6f0d51b17451c7baf64
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Mon Mar 15 11:50:39 2021 -0500
+
+    Added base files to directory
+12% cd build/
+13% make
+[ 33%] [32mBuilding CXX object CMakeFiles/lab5.dir/main.cpp.o[0m
+[ 66%] [32mBuilding CXX object CMakeFiles/lab5.dir/PrecondViolatedExcep.cpp.o[0m
+[100%] [32m[1mLinking CXX executable lab5[0m
+[100%] Built target lab5
+14% ./lab5
+Enter 'A' the test the array-based list
+or 'L' to test the linked-chain based list
+or 'Q' to quit
+
+Choice: 
+A
+Testing with ArrayList ...
+The list contains 10 items:
+list[1] = 4
+list[2] = 2
+list[3] = 1
+list[4] = 7
+list[5] = 5
+list[6] = 9
+list[7] = 3
+list[8] = 6
+list[9] = 0
+list[10] = 8
+
+Sorting the list ... Done.
+
+The list contains 10 items:
+list[1] = 0
+list[2] = 1
+list[3] = 2
+list[4] = 3
+list[5] = 4
+list[6] = 5
+list[7] = 6
+list[8] = 7
+list[9] = 8
+list[10] = 9
+
+All done with that test!
+
+Enter 'A' the test the array-based list
+or 'L' to test the linked-chain based list
+or 'Q' to quit
+
+Choice: L
+Testing with LinkedList ...
+The list contains 10 items:
+list[1] = 4
+list[2] = 2
+list[3] = 1
+list[4] = 7
+list[5] = 5
+list[6] = 9
+list[7] = 3
+list[8] = 6
+list[9] = 0
+list[10] = 8
+
+Sorting the list ... Done.
+
+The list contains 10 items:
+list[1] = 0
+list[2] = 1
+list[3] = 2
+list[4] = 3
+list[5] = 4
+list[6] = 5
+list[7] = 6
+list[8] = 7
+list[9] = 8
+list[10] = 9
+
+All done with that test!
+
+Enter 'A' the test the array-based list
+or 'L' to test the linked-chain based list
+or 'Q' to quit
+
+Choice: Q
+15% exit
+exit
+
+Script done on 2021-03-16 14:14:04-0500

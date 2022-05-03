@@ -1,0 +1,3 @@
+0000000000000000000000000000000000000000 db165fbb7583e53e7e764c9c0a31adc027eba169 Reece Holmdahl <rholmdahl@fastmail.com> 1610597002 -0600	commit (initial): initial commit
+db165fbb7583e53e7e764c9c0a31adc027eba169 a9a80a2f524df09413c3a1544e3ec0f0196e769b Reece Holmdahl <rholmdahl@fastmail.com> 1610599117 -0600	commit: Created tentative header and source file for SequenceStats class, the name I have given to the class we are required to write for project1
+a9a80a2f524df09413c3a1544e3ec0f0196e769b e7c572abb622cd42b61f2c65af17dfc8d1e288ae Reece Holmdahl <rholmdahl@fastmail.com> 1610602444 -0600	commit: Made cmake file to automate build. Finished project code, and added typescript to automate building, running, and switching directory

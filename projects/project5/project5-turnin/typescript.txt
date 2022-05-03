@@ -1,0 +1,1207 @@
+Script started on 2021-03-24 16:45:03-0500
+1% pwd
+/home/csugrads/holmd353/projects/project5
+2% ls -l
+total 72
+drwxr-xr-x 3 holmd353 student 4096 Mar 24 16:45 build
+-rw------- 1 holmd353 student  444 Mar 24 16:43 CMakeLists.txt
+-rw------- 1 holmd353 student 4361 Mar 24 16:44 Disc.cpp
+-rw------- 1 holmd353 student 2991 Mar 24 16:44 Disc.h
+-rw------- 1 holmd353 student 1707 Mar 24 16:44 DiscList.cpp
+-rw------- 1 holmd353 student 1817 Mar 24 16:43 DiscList.h
+-rwx------ 1 holmd353 student 4290 Mar 24 16:44 LinkedList.cpp
+-rwx------ 1 holmd353 student 1684 Mar 24 16:44 LinkedList.h
+-rwx------ 1 holmd353 student 3161 Mar 24 16:43 ListInterface.h
+-rw------- 1 holmd353 student 3885 Mar 24 16:44 main.cpp
+-rwx------ 1 holmd353 student 1294 Mar 24 16:44 Node.cpp
+-rwx------ 1 holmd353 student 1941 Mar 24 16:44 Node.h
+-rwx------ 1 holmd353 student  507 Mar 24 16:44 PrecondViolatedExcep.cpp
+-rwx------ 1 holmd353 student  771 Mar 24 16:43 PrecondViolatedExcep.h
+-rw------- 1 holmd353 student 3041 Mar 24 16:44 Track.cpp
+-rw------- 1 holmd353 student 1732 Mar 24 16:43 Track.h
+-rw------- 1 holmd353 student    0 Mar 24 16:45 typescript.txt
+3% cat -n CMakeLists.txt 
+     1	# My ID: 5727889
+     2	cmake_minimum_required(VERSION 3.10)
+     3	
+     4	project("Project 5 Disc Storage Program"
+     5	  VERSION 0.0.0
+     6	  DESCRIPTION "Smart pointer use case in a text based program, CS 1521 Week 11 Project 5"
+     7	  LANGUAGES CXX)
+     8	
+     9	add_compile_options(-Wall -Wextra -Wpedantic)
+    10	
+    11	set(CXX_STANDARD 17)
+    12	set(CXX_STANDARD_REQUIRED ON)
+    13	set(CXX_EXTENSIONS OFF)
+    14	
+    15	add_executable(project5
+    16	  main.cpp
+    17	  PrecondViolatedExcep.cpp
+    18	  Track.cpp
+    19	  Disc.cpp
+    20	  DiscList.cpp)
+4% cat -n main.cpp 
+     1	// My ID: 5727889
+     2	#include <iostream>
+     3	#include <memory>
+     4	#include <sstream>
+     5	#include <new>
+     6	
+     7	#include "DiscList.h"
+     8	#include "Disc.h"
+     9	#include "Track.h"
+    10	
+    11	using std::cout;
+    12	using std::cerr;
+    13	using std::cin;
+    14	using std::endl;
+    15	
+    16	/** Prints the main menu and requests input for further action. Returns a char to indicate result */
+    17	char mainMenu();
+    18	
+    19	/** Asks user to press enter to return to resume flow of control */
+    20	void returnPrompt(const std::string& message);
+    21	
+    22	/** Requests input of an integer and won't exit until a proper integer is given. */
+    23	int validateInt();
+    24	
+    25	int main() {
+    26	
+    27	  // Disc list object
+    28	  try {
+    29	    DiscList discList;
+    30	    
+    31	    // Main user experience loop
+    32	    bool exit = false;
+    33	    while (!exit) {
+    34	      char option = mainMenu();
+    35	
+    36	      std::shared_ptr<Disc> disc;
+    37	    
+    38	      switch (option) {
+    39	      case 'A':
+    40		cin.ignore(1000, '\n');
+    41		discList.insertDisc(Disc::getDiscFromUser() );
+    42		break;
+    43	      
+    44	      case 'R':
+    45	
+    46		cout << "Enter the number of the disc to remove from the system: ";
+    47		int toRemove;
+    48		toRemove = validateInt();
+    49	
+    50		if (toRemove >= 1 && toRemove <= discList.getNumberOfDiscs() ) {
+    51		  disc = discList.retrieveDisc(toRemove);
+    52		}
+    53	
+    54		if (discList.removeDisc(disc) ) {
+    55		  cout << "Successfully removed '" << disc->getTitle() << "' (disc " << toRemove << ") from the system." << endl;
+    56		} else {
+    57		  cout << "Could not remove disc " << toRemove << " from the system, it could not be found." << endl;
+    58		}
+    59	
+    60		cout << endl;
+    61	
+    62		returnPrompt("Press enter to return to the main menu. ");
+    63	
+    64		cout << endl;
+    65	      
+    66		break;
+    67	      
+    68	      case 'P':
+    69	      
+    70		cout << "Enter the number of the disc to print: ";
+    71		int toPrint;
+    72		toPrint = validateInt();
+    73	
+    74		cout << endl;
+    75	      
+    76		if (toPrint >= 1 && toPrint <= discList.getNumberOfDiscs()) {
+    77		  discList.retrieveDisc(toPrint)->printDisc();
+    78		} else {
+    79		  cout << "There is no disc that corresponds to '" << toPrint << "'." << endl;
+    80		}
+    81	
+    82		cout << endl;
+    83	
+    84		returnPrompt("Press enter to return to the main menu. ");
+    85	
+    86		cout << endl;
+    87	      
+    88		break;
+    89	
+    90		/** Lists the discs in a numbered, non verbose way. */
+    91	      case 'L':
+    92	      
+    93		// Print header
+    94		cout << endl << "|--- All Discs in the System ---|" << endl;
+    95	  
+    96		for (int i(1); i <= discList.getNumberOfDiscs(); ++i) {
+    97		  disc = discList.retrieveDisc(i);
+    98		  cout << i << ": '" << disc->getTitle() << "' by " << disc->getArtist() << endl;
+    99		}
+   100	      
+   101		// Prompt for user to return to main menu
+   102		returnPrompt("Press enter to return to the main menu. ");
+   103		cout << endl;
+   104	      
+   105		break;
+   106	      case 'Q':
+   107		exit = true;
+   108		break;
+   109	      }
+   110	    }
+   111	  } catch (const std::bad_alloc&) {
+   112	    std::cerr << "ERROR: Memory allocation failed." << endl;
+   113	  }
+   114	  
+   115	  return EXIT_SUCCESS;
+   116	}
+   117	
+   118	char mainMenu() {
+   119	  cout << "|----- Music Storage Program -----|" << endl
+   120	       << "(A)dd a new disc." << endl
+   121	       << "(R)emove a disc." << endl
+   122	       << "(P)rint a disc." << endl
+   123	       << "(L)ist discs." << endl
+   124	       << "(Q)uit." << endl
+   125	       << "> ";
+   126	
+   127	  int toUpper = 'A' - 'a';
+   128	
+   129	  char option;
+   130	  while (true) {
+   131	    cin >> option;
+   132	
+   133	    if (option >= 'a' && option <= 'z')
+   134	      option += toUpper;
+   135	
+   136	    switch (option) {
+   137	    case 'A':
+   138	    case 'R':
+   139	    case 'P':
+   140	    case 'L':
+   141	    case 'Q':
+   142	      return option;
+   143	
+   144	    default:
+   145	      break;
+   146	    }
+   147	    
+   148	    cout << "Incorrect option, please enter again." << endl << "> ";
+   149	  }
+   150	}
+   151	
+   152	void returnPrompt(const std::string& message) {
+   153	  cout << endl << message;
+   154	  
+   155	  char c;
+   156	  cin.ignore(1000, '\n');
+   157	  cin.get(c);
+   158	}
+   159	
+   160	int validateInt() {
+   161	  cin.ignore(1000, '\n');
+   162	  int i;
+   163	  bool valid = false;
+   164	  std::stringstream stream;
+   165	  std::string input;
+   166	  while (!valid) {
+   167	    getline(cin, input);
+   168	    stream << input;
+   169	
+   170	    valid = true;
+   171	    for (char c : input) {
+   172	      if (c < '0' || c > '9') {
+   173		valid = false;
+   174		break;
+   175	      }
+   176	    }
+   177	    
+   178	    if (valid) {
+   179	      stream >> i;
+   180	      break;
+   181	}
+   182	
+   183		cout << "Not a valid integer, please enter again: ";
+   184	    
+   185	    input = "";
+   186	    stream.clear();
+   187	  }
+   188	
+   189	  return i;
+   190	}
+5% cat -n DiscList.h
+     1	#ifndef DISC_LIST_
+     2	#define DISC_LIST_
+     3	
+     4	#include <memory>
+     5	
+     6	#include "LinkedList.h"
+     7	#include "Disc.h"
+     8	
+     9	class DiscList {
+    10	private:
+    11	
+    12	  /** Pointer to a list of pointers of discs. */
+    13	  std::unique_ptr<LinkedList<std::shared_ptr<Disc> > > discListPtr;
+    14	  
+    15	public:
+    16	
+    17	  /** Default ctor. */
+    18	  DiscList();
+    19	
+    20	  /** Virtual dtor. */
+    21	  virtual ~DiscList();
+    22	
+    23	  /** Checks if the disc list is empty; contains no discs.
+    24	      @return True if there are no discs in the disc list, false otherwise. */
+    25	  virtual bool isEmpty() const;
+    26	
+    27	  /** Gets the number of discs in the disc list. 
+    28	      @return The integer number of discs. */
+    29	  virtual int getNumberOfDiscs() const;
+    30	
+    31	  /** Inserts a disc into the disc list.
+    32	      @pre 'discPtr' is a pointer to a valid disc object.
+    33	      @post If successful, this disc list contains one more disc.
+    34	
+    35	      @param[in] discPtr A pointer to the disc object to insert.
+    36	
+    37	      @return True if the disc was added successfully, false otherwise. */
+    38	  virtual bool insertDisc(std::shared_ptr<Disc> discPtr);
+    39	
+    40	  /** Removes a disc from the disc list.
+    41	      @pre This disc list contains 'discPtr'. 
+    42	      @post If successful, this disc list no longer contains 'discPtr'.
+    43	
+    44	      @param[in] discPtr A pointer to a the disc object to remove.
+    45	
+    46	      @return True if the disc was removed successfully, false otherwise. */
+    47	  virtual bool removeDisc(std::shared_ptr<Disc> discPtr);
+    48	
+    49	  /** Retrieves a disc from the disc list by means of its number.
+    50	      @pre A disc associated with the number is in this disc list.
+    51	      @post None.
+    52	
+    53	      @param number The number of the disc to retrieve from the disc list.
+    54	
+    55	      @return If successful, a pointer to the disc object associated with 'number' in the list. Otherwise, nullptr. */
+    56	  virtual std::shared_ptr<Disc> retrieveDisc(int number) const;
+    57	};
+    58	
+    59	#endif // DISC_LIST_
+6% cat -n DiscList.h[Kcpp
+     1	#include <memory>
+     2	#include <iostream>
+     3	#include <new>
+     4	
+     5	#include "Disc.h"
+     6	#include "DiscList.h"
+     7	#include "LinkedList.h"
+     8	
+     9	DiscList::DiscList() {
+    10	  try {
+    11	    discListPtr = std::make_unique<LinkedList<std::shared_ptr<Disc> > >();
+    12	  } catch (const std::bad_alloc&) {
+    13	    throw;
+    14	  }
+    15	}
+    16	
+    17	DiscList::~DiscList() {
+    18	  std::cerr << "The DiscList destructor has been called." << std::endl;
+    19	}
+    20	
+    21	bool DiscList::isEmpty() const {
+    22	  return discListPtr->isEmpty();
+    23	}
+    24	
+    25	int DiscList::getNumberOfDiscs() const {
+    26	  return discListPtr->getLength();
+    27	}
+    28	
+    29	bool DiscList::insertDisc(std::shared_ptr<Disc> discPtr) {
+    30	  int nextPos = discListPtr->getLength() + 1;
+    31	
+    32	  bool success;
+    33	  try {
+    34	    success = discListPtr->insert(nextPos, discPtr);
+    35	  } catch (const std::bad_alloc&) {
+    36	    success = false;
+    37	    throw;
+    38	  }
+    39	  
+    40	  return success;
+    41	}
+    42	
+    43	bool DiscList::removeDisc(std::shared_ptr<Disc> discPtr) {
+    44	
+    45	  // Search discListPtr for 'discPtr' and if found, attempt to remove it.
+    46	  int pos = -1;
+    47	  for (int i(1); i <= discListPtr->getLength(); ++i) {
+    48	    if (discListPtr->getEntry(i) == discPtr) {
+    49	      pos = i;
+    50	      break;
+    51	    }
+    52	  }
+    53	
+    54	  // Attempt to remove 'discPtr'
+    55	  if (pos >= 1 && pos <= getNumberOfDiscs() ) {
+    56	    return discListPtr->remove(pos);
+    57	  }
+    58	
+    59	  // If we've made it here, 'discPtr' was not found in discListPtr
+    60	  return false;
+    61	}
+    62	
+    63	std::shared_ptr<Disc> DiscList::retrieveDisc(int number) const {
+    64	
+    65	  // If the number is within the range of acceptable values, return a pointer to a disc corresponding to 'number'
+    66	  if (number >= 1 && number <= getNumberOfDiscs() ) {
+    67	    return discListPtr->getEntry(number);
+    68	  }
+    69	
+    70	  // If we've made it here, there isn't a pointer to a disc associated with 'number', return nullptr
+    71	  return nullptr;
+    72	}
+7% cat -n Disc.h
+     1	#ifndef DISC_
+     2	#define DISC_
+     3	
+     4	#include <memory>
+     5	#include <string>
+     6	
+     7	#include "LinkedList.h"
+     8	#include "Track.h"
+     9	
+    10	class Track;
+    11	
+    12	class Disc {
+    13	private:
+    14	
+    15	  /** The name of the artist(s) of this disc. */
+    16	  std::string artist;
+    17	
+    18	  /** The title of this disc. */
+    19	  std::string title;
+    20	
+    21	  /** If this disc is made by multiple artists or not. */
+    22	  bool multiArtist;
+    23	
+    24	  /** The total play time in seconds of this disc. */
+    25	  int playTime = 0;
+    26	
+    27	  /** The year the disc was created. */
+    28	  std::string year;
+    29	
+    30	  /** The disc's genre. */
+    31	  std::string genre;
+    32	
+    33	  /** A pointer to a list of pointers of track objects; all the tracks of this disc. */
+    34	  std::unique_ptr<LinkedList<std::shared_ptr<Track> > > trackListPtr;
+    35	
+    36	  /** Modularized (Y/n) validation.
+    37	      @return True if the Y/y is entered through stdin, or false if N/n is entered through stdin. */
+    38	  static bool yesOrNo();
+    39	  
+    40	public:
+    41	
+    42	  /** Default ctor. */
+    43	  Disc();
+    44	
+    45	  /** Virtual dtor. */
+    46	  virtual ~Disc();
+    47	
+    48	  /** Checks if the disc is empty; contains no tracks.
+    49	      @return True if there are no tracks on this disc, false otherwise. */
+    50	  virtual bool isEmpty() const;
+    51	
+    52	  /** Gets the number of tracks on this disc. 
+    53	      @return The integer number of tracks. */
+    54	  virtual int getNumberOfTracks() const;
+    55	
+    56	  /** Inserts a track on to this disc.
+    57	      @pre 'trackPtr' is a pointer to a valid track object.
+    58	      @post This disc contains one more track and its play time has been increased by the amount on 'trackPtr'.
+    59	
+    60	      @param[in] trackPtr A pointer to the track object to insert.
+    61	
+    62	      @return True if the track was added successfully, false otherwise. */
+    63	  virtual bool insertTrack(std::shared_ptr<Track> trackPtr);
+    64	
+    65	  /** Retrieves a track from this disc using its number.
+    66	      @pre This disc must contain a track with the number 'number'.
+    67	
+    68	      @param number The number of the track to retrieve.
+    69	
+    70	      @return A pointer to the track retrieved. */
+    71	  virtual std::shared_ptr<Track> retrieveTrackByNumber(int number) const;
+    72	
+    73	  /** Gets the artist(s) of this disc. 
+    74	      @return String containing the artist(s) of this disc. If there are multiple, they are comma separated. */
+    75	  virtual std::string getArtist() const;
+    76	
+    77	  /** Gets the title of this disc.
+    78	      @return String title of this disc. */
+    79	  virtual std::string getTitle() const;
+    80	
+    81	  /** Checks if this disc is made by multiple artists. 
+    82	      @return True if it is made by multiple artists, false otherwise. */
+    83	  virtual bool isMultiArtist() const;
+    84	
+    85	  /** Reads in data from stdin about a disc and yields a pointer to a new disc object.
+    86	      @return A pointer to a new disc object representing the information entered. */
+    87	  static std::shared_ptr<Disc> getDiscFromUser();
+    88	
+    89	  /** Outputs information about this disc to stdout. */
+    90	  virtual void printDisc() const;
+    91	
+    92	  /** Adds time to the total play time of this disc, in seconds.
+    93	      @param seconds The amount of seconds to add to the play time of this disc. */
+    94	  virtual void addToTotalPlayTime(int seconds);
+    95	};
+    96	
+    97	#endif // DISC_
+8% cat -n Disc.h[Kcpp
+     1	#include <memory>
+     2	#include <iostream>
+     3	#include <string>
+     4	#include <sstream>
+     5	#include <new>
+     6	
+     7	#include "Track.h"
+     8	#include "Disc.h"
+     9	
+    10	using std::cout;
+    11	using std::cin;
+    12	using std::endl;
+    13	
+    14	Disc::Disc() {
+    15	
+    16	  try {
+    17	    trackListPtr = std::make_unique<LinkedList<std::shared_ptr<Track> > >();
+    18	  } catch (std::bad_alloc&) {
+    19	    std::cerr << "ERROR: Memory allocation failed." << endl;
+    20	    throw;
+    21	  }
+    22	}
+    23	
+    24	Disc::~Disc() {
+    25	  std::cerr << "Disc \"" << title << "\" destructor called." << std::endl;
+    26	}
+    27	
+    28	bool Disc::yesOrNo() {
+    29	
+    30	  std::string input;
+    31	  while (true) {
+    32	    getline(cin, input);
+    33	
+    34	    if (input == "Y" || input == "y") {
+    35	      return true;
+    36	    } else if (input == "N" || input == "n") {
+    37	      return false;
+    38	    } else {
+    39	      input = "";
+    40	      cout << "Incorrect input. Please enter (Y/n): ";
+    41	    }
+    42	  }
+    43	}
+    44	
+    45	bool Disc::isEmpty() const {
+    46	  return trackListPtr->isEmpty();
+    47	}
+    48	
+    49	int Disc::getNumberOfTracks() const {
+    50	  return trackListPtr->getLength();
+    51	}
+    52	
+    53	bool Disc::insertTrack(std::shared_ptr<Track> trackPtr) {
+    54	
+    55	  // catch bad alloc and return success or not
+    56	  bool success;
+    57	  try {
+    58	    success = trackListPtr->insert(trackPtr->getNumber(), trackPtr);
+    59	  } catch (const std::bad_alloc&) {
+    60	    success = false;
+    61	    throw;
+    62	  }
+    63	  
+    64	  return success;
+    65	}
+    66	
+    67	std::shared_ptr<Track> Disc::retrieveTrackByNumber(int number) const {
+    68	
+    69	  if (number > 0 && number <= getNumberOfTracks() )
+    70	    return trackListPtr->getEntry(number);
+    71	  
+    72	  return nullptr;
+    73	}
+    74	
+    75	std::string Disc::getArtist() const {
+    76	  return artist;
+    77	}
+    78	
+    79	std::string Disc::getTitle() const {
+    80	  return title;
+    81	}
+    82	
+    83	bool Disc::isMultiArtist() const {
+    84	  return multiArtist;
+    85	}
+    86	
+    87	std::shared_ptr<Disc> Disc::getDiscFromUser() {
+    88	
+    89	  // Make a new shared pointer to a disc object
+    90	  std::shared_ptr<Disc> disc;
+    91	  try {
+    92	    disc = std::make_shared<Disc>();
+    93	  } catch (const std::bad_alloc&) {
+    94	    throw;
+    95	    return nullptr;
+    96	  }
+    97	
+    98	  // Read title of the disc
+    99	  cout << "Enter the title of this disc: ";
+   100	  getline(cin, disc->title);
+   101	
+   102	  // Read if this disc is multiple artist
+   103	  cout << "Is this disc by mutliple artists? (Y/n): ";
+   104	
+   105	  // (Y/n) input validation
+   106	  disc->multiArtist = yesOrNo();
+   107	
+   108	  // Read in the artist of this disc
+   109	  std::string artist;
+   110	  if (disc->isMultiArtist() ) {
+   111	    artist = "Various Artists";
+   112	  } else {
+   113	    cout << "Enter the name of this disc's artist: ";
+   114	    getline(cin, artist);
+   115	  }
+   116	  disc->artist = artist;
+   117	
+   118	  // Read in the release year of this disc
+   119	  cout << "Enter the year this disc was released: ";
+   120	
+   121	  // Year input validation
+   122	  std::string input;
+   123	  while (true) {
+   124	    getline(cin, input);
+   125	    
+   126	    bool badInput = false;
+   127	    for (char c : input) {
+   128	      if (c < 48 || c > 57)
+   129		badInput = true;
+   130	    }
+   131	    
+   132	    badInput = badInput || (input.length() != 4);
+   133	    
+   134	    if (!badInput) {
+   135	      disc->year = input;
+   136	      break;
+   137	    }
+   138	
+   139	    cout << "Incorrect format. Please enter the year as a 4 digit number: ";
+   140	    input = "";
+   141	  }
+   142	
+   143	  // Read in genre of the disc
+   144	  cout << "Enter the genre of this disc: ";
+   145	  getline(cin, disc->genre);
+   146	
+   147	  // Read in tracks
+   148	  while (true) {
+   149	    cout << "\nWould you like to add a track to this disc? (Y/n): ";
+   150	    bool addTrack = yesOrNo();
+   151	
+   152	    if (addTrack) {
+   153	      try {
+   154		auto newTrack = Track::getTrackFromUser(disc);
+   155		disc->insertTrack(newTrack);
+   156		disc->addToTotalPlayTime(newTrack->getPlayTime() );
+   157	      } catch (const std::bad_alloc&) {
+   158		throw;
+   159	      }
+   160	    } else {
+   161	      cout << endl;
+   162	      break;
+   163	    }
+   164	  }
+   165	  
+   166	  return disc;
+   167	}
+   168	
+   169	void Disc::printDisc() const {
+   170	
+   171	  // Print disc header of title and artist
+   172	  cout << "----- '" << getTitle() << "' by ";
+   173	
+   174	  // Print artist, and by various artists if multiple
+   175	  if (isMultiArtist() ) {
+   176	    cout << "Various Artists";
+   177	  } else {
+   178	    cout << getArtist();
+   179	  }
+   180	  cout << " -----" << endl;
+   181	
+   182	  // Print release year, genre, and number of tracks
+   183	  cout << "Year released: " << year << endl
+   184	       << "Genre: " << genre << endl
+   185	       << "Number of tracks: " << getNumberOfTracks() << endl;
+   186	
+   187	  // Print the total play time of this disc
+   188	  int minutes = playTime / 60;
+   189	  int seconds = playTime % 60;
+   190	  cout << "Total play time: " << minutes << ":" << (seconds < 10 ? "0" : "") << seconds << endl;
+   191	
+   192	  // Print out all of the tracks under this disc
+   193	  for (int i(1); i <= trackListPtr->getLength(); ++i) {
+   194	    cout << endl;
+   195	    trackListPtr->getEntry(i)->printTrack();
+   196	  }
+   197	}
+   198	
+   199	void Disc::addToTotalPlayTime(int seconds) {
+   200	  playTime += seconds;
+   201	}
+9% cat -n Track.h
+     1	#ifndef TRACK_
+     2	#define TRACK_
+     3	
+     4	#include <memory>
+     5	#include <string>
+     6	
+     7	#include "Disc.h"
+     8	
+     9	class Disc;
+    10	
+    11	class Track {
+    12	private:
+    13	
+    14	  /** Initialized a weak pointer to the parent disc. */
+    15	  std::weak_ptr<Disc> parentDisc;
+    16	
+    17	  /** The track number this track is in the parent disc. */
+    18	  int number;
+    19	
+    20	  /** The name of this track. */
+    21	  std::string name;
+    22	
+    23	  /** The name of the artist of this track. */
+    24	  std::string artist;
+    25	
+    26	  /** The playtime in seconds of this track. */
+    27	  int playTime;
+    28	
+    29	  /** The path/filename (location) where the track is stored in the system. */
+    30	  std::string location;
+    31	
+    32	  /** Static utility method that reads in play time in the form 'minutes:seconds' and converts it to an int of seconds. */
+    33	  static int readPlayTime();
+    34	  
+    35	public:
+    36	
+    37	  /** No default ctor. */
+    38	  Track() = delete;
+    39	  
+    40	  /** Ctor, associates this track with the disc of discPtr. */
+    41	  Track(std::shared_ptr<Disc> discPtr);
+    42	
+    43	  /** Virtual dtor. */
+    44	  virtual ~Track();
+    45	
+    46	  /** Reads in information about a track from stdin and yields a pointer to a new track object.
+    47	      @pre 'discPtr' is a shared pointer to a disc.
+    48	      @post None.
+    49	
+    50	      @param[in] discPtr The pointer to the parent disc of this track.
+    51	
+    52	      @return A shared pointer of the track newly created. */
+    53	  static std::shared_ptr<Track> getTrackFromUser(std::shared_ptr<Disc> discPtr);
+    54	
+    55	  /** Prints information about this track to stdout. */
+    56	  virtual void printTrack() const;
+    57	
+    58	  /** Gets the number of this track on the parent disc.
+    59	      @return Integer number of this track. */
+    60	  virtual int getNumber() const;
+    61	
+    62	  /** Gets the play time in seconds of this track.
+    63	      @return Integer play time representing duration in seconds. */
+    64	  virtual int getPlayTime() const;
+    65	};
+    66	
+    67	#endif // TRACK_
+10% cat -n Track.h[Kcpp
+     1	#include <memory>
+     2	#include <iostream>
+     3	#include <sstream>
+     4	#include <new>
+     5	
+     6	#include "Track.h"
+     7	#include "Disc.h"
+     8	
+     9	using std::cout;
+    10	using std::cin;
+    11	using std::endl;
+    12	
+    13	Track::Track(std::shared_ptr<Disc> discPtr) {
+    14	  parentDisc = discPtr;
+    15	}
+    16	
+    17	Track::~Track() {
+    18	  std::cerr << "Track \"" << name << "\" destructor called." << std::endl; 
+    19	}
+    20	
+    21	int Track::readPlayTime() {
+    22	
+    23	  std::string input;
+    24	  std::stringstream stream;
+    25	  
+    26	  int min;
+    27	  int sec;
+    28	
+    29	  cout << "Enter the play time of this track with the format 'minutes:seconds': ";
+    30	  while (true) {
+    31	    getline(cin, input);
+    32	
+    33	    bool invalid = false;
+    34	
+    35	    int delims(0);
+    36	    for (char c : input) {
+    37	      if (c >= 48 && c <= 57)
+    38		continue;
+    39	      else if (c == ':')
+    40		++delims;
+    41	      else
+    42		invalid = true;
+    43	    }
+    44	
+    45	    invalid = invalid || (delims != 1);
+    46	
+    47	    if (!invalid) {
+    48	      char delim;
+    49	      stream << input;
+    50	
+    51	      stream >> min;
+    52	      stream >> delim;
+    53	      stream >> sec;
+    54	
+    55	      if (delim == ':' && min >= 0 && sec >= 0 && sec <= 59)
+    56		break;
+    57	    }
+    58	
+    59	    stream.clear();
+    60	    input = "";
+    61	    cout << "Incorrect format. Please re-enter the play time in 'minutes:seconds': ";
+    62	  }
+    63	  
+    64	  return min * 60 + sec;
+    65	}
+    66	
+    67	std::shared_ptr<Track> Track::getTrackFromUser(std::shared_ptr<Disc> discPtr) {
+    68	
+    69	  // Make a new shared pointer to a track object.
+    70	  std::shared_ptr<Track> track;
+    71	
+    72	  try {
+    73	    track = std::make_shared<Track>(discPtr);
+    74	  } catch (const std::bad_alloc&) {
+    75	    throw;
+    76	  }
+    77	
+    78	  // Set the tracks number to the next available number in the disc
+    79	  track->number = discPtr->getNumberOfTracks() + 1;
+    80	  
+    81	  // Read name of track
+    82	  cout << "Enter the name of this track: ";
+    83	  getline(cin, track->name);
+    84	
+    85	  // If multi artist, prompt, otherwise use the disc's artist
+    86	  std::string artist;
+    87	  if (discPtr->isMultiArtist() ) {
+    88	    cout << "Enter the name of this track's artist: ";
+    89	    getline(cin, artist);
+    90	  } else {
+    91	    artist = discPtr->getArtist();
+    92	  }
+    93	  track->artist = artist;
+    94	
+    95	  // Read play time of track
+    96	  track->playTime = readPlayTime();
+    97	  
+    98	  // Read location of track in system
+    99	  cout << "Enter the location (path) of this track in the system: ";
+   100	  getline(cin, track->location);
+   101	  
+   102	  return track;
+   103	}
+   104	
+   105	void Track::printTrack() const {
+   106	
+   107	  // Lock weak pointer into a shared pointer locally in this method
+   108	  auto parentDisc = this->parentDisc.lock();
+   109	  
+   110	  // Print the track number and name
+   111	  cout << "--- '" << parentDisc->getTitle() << "' Track Number " << getNumber() << " ---" << endl
+   112	       << "Name: " << name << endl;
+   113	
+   114	  // If the parent disc is multi artist, print the artist of this track
+   115	  if (parentDisc->isMultiArtist() )
+   116	    cout << "Artist: " << artist << endl;
+   117	
+   118	  // Derive minutes and seconds from total seconds
+   119	  int duration = getPlayTime();
+   120	  int minutes = duration / 60;
+   121	  int seconds = duration % 60;
+   122	
+   123	  // Print the play time and location in the system
+   124	  cout << "Play time: " << minutes << ":" << seconds << endl
+   125	       << "Location in system: " << location << endl;
+   126	}
+   127	
+   128	int Track::getNumber() const {
+   129	  return number;
+   130	}
+   131	
+   132	int Track::getPlayTime() const {
+   133	  return playTime;
+   134	}
+11% ls
+build		Disc.cpp  DiscList.cpp	LinkedList.cpp	ListInterface.h  Node.cpp  PrecondViolatedExcep.cpp  Track.cpp	typescript.txt
+CMakeLists.txt	Disc.h	  DiscList.h	LinkedList.h	main.cpp	 Node.h    PrecondViolatedExcep.h    Track.h
+12% echo Didn't include prei[K-made[K[K[K[K[K[K[K[Kbase files in the typescript, let me know if i should. I think it clogs i [K it.
+Unmatched '''.
+13% echo Didn't include base files in the typescript, let me know if i should. I think it clogs it.n'[P
+Didnt include base files in the typescript, let me know if i should. I think it clogs it.
+14% git --no-pager log --no-color
+commit 65a17067196c0fbbce3e33873ce571150bd91c43 (HEAD -> master)
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Wed Mar 24 16:43:28 2021 -0500
+
+    Added try catch blocks to gracefully exit when there is a dynamic memory lack.
+
+commit de29015cd4aff3873521cfa232d739787c4a129e
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Wed Mar 24 16:28:57 2021 -0500
+
+    Main routine working correctly. Going to attempt to implement proper memory allocation checking but may not have time
+
+commit d457df3705bf5fd22be2ed33e7657438bbb9cdf8
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Wed Mar 24 15:10:05 2021 -0500
+
+    DiscList working correctly, beginning main routine in driver file.
+
+commit 1ff644a5f12d15305ceb26e639a39a1a5295e3a8
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Wed Mar 24 15:04:08 2021 -0500
+
+    Preliminary implementation of DiscList complete. Onto testing.
+
+commit 632db95343c91f2b9873a8dc4f684c73c955d350
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Wed Mar 24 14:45:30 2021 -0500
+
+    Made specs for DiscList
+
+commit 0ba566f20773f0c46df945d45e4f5e39757440d7
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Wed Mar 24 14:19:09 2021 -0500
+
+    Disc implementation is working correctly alongside Track implementation. Moving on to DiscList. Better formatting will come later.
+
+commit 54d0d6374a43a2336aa55c691438febc3a204019
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Wed Mar 24 11:30:35 2021 -0500
+
+    Track appears to be working as planned. Working on further implementation of Disc according to specs.
+
+commit deacfa5d5fa36a72eef5771aca842e346ad50c44
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 23 16:41:25 2021 -0500
+
+    Partial implementation of Track. Finished specs of Disc.
+
+commit 479d455241a654afa144540eadce1a7e1596979f
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 23 15:12:45 2021 -0500
+
+    Had issues with co-dependency, had to use stack overflow. Put pseudo-class definitions in the top of each codependent class in order to compile. Considered using interfaces, but had similar issues.
+
+commit b7eb0f393101a6d2b488f9ba4d12a4a790d2a1f6
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 23 13:19:50 2021 -0500
+
+    Made all required files, and made header files satisfy the bare minimum requirements. Started fleshing out Track.h to fulfill project requirements, will work up in complexity from Track to DiscList.
+
+commit d4895707cf7ac19a424ffed339f43d455b9fb0f8
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 23 12:35:14 2021 -0500
+
+    Added remaining required base files, made main.cpp and added ID to top, made basic CMakeLists and out of source build dir.
+
+commit 6c08fe73dea885822555c9a54bc9bd35fc151b81
+Author: Reece Holmdahl <reece.holmdahl@fastmail.com>
+Date:   Tue Mar 23 12:28:19 2021 -0500
+
+    Added base files to directory, altered Node.cpp destructor cerr message.
+15% cd build/
+16% make
+[ 16%] [32mBuilding CXX object CMakeFiles/project5.dir/main.cpp.o[0m
+[ 33%] [32mBuilding CXX object CMakeFiles/project5.dir/PrecondViolatedExcep.cpp.o[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/project5.dir/Track.cpp.o[0m
+[ 66%] [32mBuilding CXX object CMakeFiles/project5.dir/Disc.cpp.o[0m
+[ 83%] [32mBuilding CXX object CMakeFiles/project5.dir/DiscList.cpp.o[0m
+[100%] [32m[1mLinking CXX executable project5[0m
+[100%] Built target project5
+17% ./project5 
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> A
+Enter the title of this disc: Room On  on Fire
+Is this disc by mutliple artists? (Y/n): T n
+Enter the name of this disc's artist: The Strokes
+Enter the year this disc was released: 2003
+Enter the genre of this disc: Alt   Garage Rock
+
+Would you like to add a track to this disc? (Y/n): Y
+Enter the name of this track: Reptilia
+Enter the play time of this track with the format 'minutes:seconds': 3:26
+Enter the location (path) of this track in the system: /musiic/   c/strokes/re  roomonfire/reptilia
+
+Would you like to add a track to this disc? (Y/n): Y
+Enter the name of this track: Meet me    Me In The Bathroom
+Enter the play time of this track with the format 'minutes:seconds': 4:30
+Enter the location (path) of this track in the system: /music/...
+
+Would you like to add a track to this disc? (Y/n): Y
+Enter the name of this track: Unde    W The End Has No End
+Enter the play time of this track with the format 'minutes:seconds': 3 2:5 48
+Enter the location (path) of this track in the system: /music/...
+
+Would you like to add a track to this disc? (Y/n): Y
+Enter the name of this track: I cant 't thin ko   k of any other songs
+Enter the play time of this track with the format 'minutes:seconds': 3:600
+Incorrect format. Please re-enter the play time in 'minutes:seconds': 3:60
+Incorrect format. Please re-enter the play time in 'minutes:seconds': 3:59
+Enter the location (path) of this track in the system: /msuic    usic/...
+
+Would you like to add a track to this disc? (Y/n): n
+
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> l
+
+|--- All Discs in the System ---|
+1: 'Room on Fire' by The Strokes
+
+Press enter to return to the main menu. P 
+
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> P
+Enter the number of the disc to print: 1
+
+----- 'Room on Fire' by The Strokes -----
+Year released: 2003
+Genre: Garage Rock
+Number of tracks: 4
+Total play time: 14:43
+
+--- 'Room on Fire' Track Number 1 ---
+Name: Reptilia
+Play time: 3:26
+Location in system: /music/strokes/roomonfire/reptilia
+
+--- 'Room on Fire' Track Number 2 ---
+Name: Meet Me In The Bathroom
+Play time: 4:30
+Location in system: /music/...
+
+--- 'Room on Fire' Track Number 3 ---
+Name: The End Has No End
+Play time: 2:48
+Location in system: /music/...
+
+--- 'Room on Fire' Track Number 4 ---
+Name: I can't think of any other songs
+Play time: 3:59
+Location in system: /music/...
+
+
+Press enter to return to the main menu. 
+
+
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> A
+Enter the title of this disc: A cool album
+Is this disc by mutliple artists? (Y/n): Y
+Enter the year this disc was released: 200 10
+Enter the genre of this disc: House
+
+Would you like to add a track to this disc? (Y/n): Y
+Enter the name of this track: A g good song
+Enter the name of this track's artist: Stevie Wonder
+Enter the play time of this track with the format 'minutes:seconds': 6:30  19
+Enter the location (path) of this track in the system: /stevie/wonder/music
+
+Would you like to add a track to this disc? (Y/n): Y y
+Enter the name of this track: Life  ving in the city
+Enter the name of this track's artist: Stev    not sure
+Enter the play time of this track with the format 'minutes:seconds': 2:29
+Enter the location (path) of this track in the system: /music/good/music/path
+
+Would you like to add a track to this disc? (Y/n): n
+
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> L
+
+|--- All Discs in the System ---|
+1: 'Room on Fire' by The Strokes
+2: 'A cool album' by Various Artists
+
+Press enter to return to the main menu. 
+
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> P
+Enter the number of the disc to print: 2
+
+----- 'A cool album' by Various Artists -----
+Year released: 2010
+Genre: House
+Number of tracks: 2
+Total play time: 8:48
+
+--- 'A cool album' Track Number 1 ---
+Name: A good song
+Artist: Stevie Wonder
+Play time: 6:19
+Location in system: /stevie/wonder/music
+
+--- 'A cool album' Track Number 2 ---
+Name: Living in the city
+Artist: not sure
+Play time: 2:29
+Location in system: /music/good/music/path
+
+
+Press enter to return to the main menu. 
+
+
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> R
+Enter the number of the disc to remove from the system: 2
+Successfully removed 'A cool album' (disc 2) from the system.
+
+
+Press enter to return to the main menu. 
+
+
+Disc "A cool album" destructor called.
+Track "Living in the city" destructor called.
+Track "A good song" destructor called.
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> L
+
+|--- All Discs in the System ---|
+1: 'Room on Fire' by The Strokes
+
+Press enter to return to the main menu. R
+
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> R
+Enter the number of the disc to remove from the system: 1
+Successfully removed 'Room on Fire' (disc 1) from the system.
+
+
+Press enter to return to the main menu. 
+
+
+Disc "Room on Fire" destructor called.
+Track "I can't think of any other songs" destructor called.
+Track "The End Has No End" destructor called.
+Track "Meet Me In The Bathroom" destructor called.
+Track "Reptilia" destructor called.
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> Q L
+
+|--- All Discs in the System ---|
+
+Press enter to return to the main menu. 
+
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> P
+Enter the number of the disc to print: 1
+
+There is no disc that corresponds to '1'.
+
+
+Press enter to return to the main menu. 
+
+
+|----- Music Storage Program -----|
+(A)dd a new disc.
+(R)emove a disc.
+(P)rint a disc.
+(L)ist discs.
+(Q)uit.
+> Q
+The DiscList destructor has been called.
+18% exit
+exit
+
+Script done on 2021-03-24 16:50:07-0500

@@ -1,0 +1,5 @@
+cd ./build
+cmake --build .
+./project1
+cd ..
+exit
